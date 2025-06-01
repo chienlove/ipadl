@@ -18,21 +18,37 @@ export class AppleStoreClient {
   async _makeRequest(url, options, isRetry = false) {
     try {
       const response = await fetch(url, options);
-      
+
+      // Lấy SCNT & Session ID nếu bị yêu cầu xác thực 2 bước
       if (response.status === 409 && !isRetry) {
         this.scnt = response.headers.get('scnt');
         this.authToken = response.headers.get('x-apple-id-session-id');
         return this._handle2FARequired();
       }
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.customerMessage || `Apple API error: ${response.statusText}`);
+      // Đọc phản hồi text (có thể là JSON hoặc HTML lỗi)
+      const text = await response.text();
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch (jsonError) {
+        console.error('[AppleStoreClient] ⚠️ Phản hồi KHÔNG PHẢI JSON từ Apple:');
+        console.error(text);
+        throw new Error('Phản hồi từ Apple không hợp lệ (không phải JSON)');
       }
 
-      return response.json();
+      if (!response.ok) {
+        console.error('[AppleStoreClient] ❌ Apple trả lỗi:', data);
+        throw new Error(data.customerMessage || `Apple API error: ${response.statusText}`);
+      }
+
+      return data;
     } catch (error) {
-      console.error('Request failed:', error);
+      console.error('❗ Request to Apple API failed:', {
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
