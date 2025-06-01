@@ -25,7 +25,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests, please try again later'
 });
@@ -38,7 +38,7 @@ app.use('/downloads', express.static(path.join(__dirname, 'downloads')));
 // Initialize Services
 const appleClient = new AppleStoreClient();
 const activeSessions = new Map();
-const DOWNLOAD_TIMEOUT = 30000; // 30 seconds timeout
+const DOWNLOAD_TIMEOUT = 30000;
 
 // Enhanced download function with timeout and retry
 async function downloadFile(url, filePath, retries = 3) {
@@ -66,7 +66,7 @@ async function downloadFile(url, filePath, retries = 3) {
   }
 }
 
-// Health Check Endpoint
+// Health Check
 app.get('/health', (req, res) => {
   res.status(200).json({
     status: 'healthy',
@@ -76,53 +76,64 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Authentication Endpoint
+// Authentication Endpoint (đã sửa)
 app.post('/api/authenticate', async (req, res) => {
   try {
     const { appleId, password } = req.body;
+
     if (!appleId || !password) {
       return res.status(400).json({ error: 'Apple ID and password are required' });
     }
 
+    console.log(`[AUTH] Đang xác thực tài khoản: ${appleId}`);
+
     const sessionId = uuidv4();
     const result = await appleClient.authenticate(appleId, password);
-    
+
+    console.log('[AUTH] Kết quả từ Apple:', result);
+
     if (result._state === 'failed' && result.failureType === 'MFA_REQUIRED') {
       activeSessions.set(sessionId, { appleId, password, timestamp: Date.now() });
+
       return res.json({
         status: '2fa_required',
         sessionId,
-        message: result.customerMessage || 'Please enter your 2FA code'
+        message: result.customerMessage || 'Vui lòng nhập mã xác thực 2FA'
       });
     }
 
     if (result._state !== 'success') {
+      console.warn('[AUTH] Xác thực thất bại:', result.customerMessage || 'Không rõ lý do');
       return res.status(401).json({ error: result.customerMessage || 'Authentication failed' });
     }
 
-    res.json({ 
-      status: 'authenticated', 
-      dsPersonId: result.dsPersonId 
+    return res.json({
+      status: 'authenticated',
+      dsPersonId: result.dsPersonId
     });
+
   } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(500).json({ error: 'Internal server error during authentication' });
+    console.error('[AUTH] Lỗi khi xác thực Apple ID:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response ? await extractErrorResponse(error.response) : null
+    });
+
+    return res.status(500).json({ error: 'Internal server error during authentication' });
   }
 });
 
-// 2FA Verification Endpoint
+// 2FA Verification
 app.post('/api/verify-2fa', async (req, res) => {
   try {
     const { sessionId, code } = req.body;
     const session = activeSessions.get(sessionId);
-    
-    // Session validation
+
     if (!session) {
       return res.status(400).json({ error: 'Invalid session ID' });
     }
 
-    // Clean up old sessions
-    if (Date.now() - session.timestamp > 5 * 60 * 1000) { // 5 minutes expiry
+    if (Date.now() - session.timestamp > 5 * 60 * 1000) {
       activeSessions.delete(sessionId);
       return res.status(400).json({ error: 'Session expired' });
     }
@@ -131,15 +142,15 @@ app.post('/api/verify-2fa', async (req, res) => {
     activeSessions.delete(sessionId);
 
     if (result._state !== 'success') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         error: result.customerMessage || 'Verification failed',
         requiresNewAuth: result.failureType === 'MFA_REQUIRED'
       });
     }
 
-    res.json({ 
-      status: 'authenticated', 
-      dsPersonId: result.dsPersonId 
+    res.json({
+      status: 'authenticated',
+      dsPersonId: result.dsPersonId
     });
   } catch (error) {
     console.error('2FA verification error:', error);
@@ -147,21 +158,18 @@ app.post('/api/verify-2fa', async (req, res) => {
   }
 });
 
-// Download Endpoint
+// Download
 app.post('/api/download', async (req, res) => {
   try {
     const { appId, appVersionId, dsPersonId } = req.body;
-    
-    // Input validation
+
     if (!appId || !dsPersonId) {
       return res.status(400).json({ error: 'App ID and authentication are required' });
     }
 
-    // Create unique download directory
     const downloadDir = path.join(__dirname, 'downloads', uuidv4());
     await fs.mkdir(downloadDir, { recursive: true });
 
-    // Get download info
     const downloadInfo = await appleClient.download(appId, appVersionId);
     if (!downloadInfo?.songList?.[0]?.URL) {
       throw new Error('Invalid download information received');
@@ -172,10 +180,8 @@ app.post('/api/download', async (req, res) => {
     const fileName = `${safeName}_${metadata.bundleShortVersionString}.ipa`;
     const filePath = path.join(downloadDir, fileName);
 
-    // Download file with timeout and retry
     await downloadFile(downloadUrl, filePath);
 
-    // Schedule cleanup
     setTimeout(async () => {
       try {
         await fs.rm(downloadDir, { recursive: true, force: true });
@@ -183,46 +189,59 @@ app.post('/api/download', async (req, res) => {
       } catch (error) {
         console.error('Cleanup failed:', error);
       }
-    }, 3600000); // 1 hour
+    }, 3600000);
 
     res.json({
       success: true,
       downloadUrl: `/downloads/${path.basename(downloadDir)}/${fileName}`,
       metadata: {
-        name: metadata.bundleDisplayName,
-        version: metadata.bundleShortVersionString,
-        size: (await fs.stat(filePath)).size
+        ...metadata,
+        fileSize: (await fs.stat(filePath)).size
       }
     });
   } catch (error) {
     console.error('Download failed:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message || 'Failed to download application',
       code: error.code
     });
   }
 });
 
-// Clean up expired sessions every hour
+// Cleanup expired sessions
 setInterval(() => {
   const now = Date.now();
   for (const [sessionId, session] of activeSessions) {
-    if (now - session.timestamp > 5 * 60 * 1000) { // 5 minutes expiry
+    if (now - session.timestamp > 5 * 60 * 1000) {
       activeSessions.delete(sessionId);
     }
   }
-}, 60 * 60 * 1000); // 1 hour
+}, 60 * 60 * 1000);
 
-// Error handling middleware
+// Log Apple API error response body
+async function extractErrorResponse(response) {
+  try {
+    const text = await response.text();
+    return {
+      status: response.status,
+      headers: Object.fromEntries(response.headers.entries()),
+      body: text
+    };
+  } catch (e) {
+    return 'Không thể đọc phản hồi lỗi từ Apple';
+  }
+}
+
+// Error middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Internal server error',
     requestId: req.id
   });
 });
 
-// Start server
+// Start
 const server = app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`);
   console.log(`Health check: http://localhost:${port}/health`);
