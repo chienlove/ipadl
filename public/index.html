@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple App Downloader</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📱 App Store Downloader</h1>
+      <p>Tải ứng dụng iOS từ Apple App Store</p>
+    </header>
+
+    <main>
+      <div class="auth-form" id="loginForm">
+        <h2>Đăng nhập Apple ID</h2>
+        <form id="authForm">
+          <div class="form-group">
+            <label for="appleId">Apple ID</label>
+            <input type="email" id="appleId" required>
+          </div>
+          <div class="form-group">
+            <label for="password">Mật khẩu</label>
+            <input type="password" id="password" required>
+          </div>
+          <button type="submit">Tiếp tục</button>
+        </form>
+      </div>
+
+      <div class="auth-form hidden" id="twoFaForm">
+        <h2>Xác thực 2 bước</h2>
+        <form id="twoFaForm">
+          <p id="twoFaMessage">Vui lòng nhập mã 6 chữ số đã gửi đến thiết bị của bạn</p>
+          <div class="form-group">
+            <label for="code">Mã xác thực</label>
+            <input type="text" id="code" pattern="\d{6}" required>
+          </div>
+          <button type="submit">Xác nhận</button>
+        </form>
+      </div>
+
+      <div class="download-form hidden" id="downloadForm">
+        <h2>Tải ứng dụng</h2>
+        <form id="downloadForm">
+          <div class="form-group">
+            <label for="appId">App ID (số)</label>
+            <input type="text" id="appId" pattern="\d+" required>
+          </div>
+          <div class="form-group">
+            <label for="appVersionId">Version ID (để trống nếu không biết)</label>
+            <input type="text" id="appVersionId">
+          </div>
+          <button type="submit">Tải xuống</button>
+        </form>
+      </div>
+
+      <div class="result hidden" id="resultSection">
+        <h2>Tải xuống thành công!</h2>
+        <div class="app-info" id="appInfo">
+          <!-- App info will be inserted here -->
+        </div>
+        <a id="downloadLink" class="download-btn" href="#" target="_blank">Tải file IPA</a>
+        <p class="note">Lưu ý: File chưa được ký, cần công cụ đặc biệt để cài đặt</p>
+      </div>
+
+      <div class="error hidden" id="errorSection">
+        <h2>Đã xảy ra lỗi</h2>
+        <p id="errorMessage"></p>
+        <button id="retryButton">Thử lại</button>
+      </div>
+    </main>
+
+    <footer>
+      <p>Chỉ sử dụng cho ứng dụng bạn đã mua. Không hỗ trợ ứng dụng miễn phí.</p>
+    </footer>
+  </div>
+
+  <script src="/script.js"></script>
+</body>
+</html>
