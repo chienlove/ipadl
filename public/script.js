@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSessionId = data.sessionId;
         twoFaMessage.textContent = data.message || 'Vui lòng nhập mã xác thực';
         loginForm.classList.add('hidden');
-        twoFaForm.classList.remove('hidden');
+        document.getElementById('twoFaContainer').classList.remove('hidden');
       } else if (data.status === 'authenticated') {
         dsPersonId = data.dsPersonId;
         showDownloadForm();
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (data.status === 'authenticated') {
         dsPersonId = data.dsPersonId;
-        twoFaForm.classList.add('hidden');
+        document.getElementById('twoFaContainer').classList.add('hidden');
         showDownloadForm();
       } else {
         throw new Error(data.error || 'Xác thực thất bại');
@@ -118,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Hiển thị form tải ứng dụng
   function showDownloadForm() {
-    twoFaForm.classList.add('hidden');
-    downloadForm.classList.remove('hidden');
+    document.getElementById('twoFaContainer').classList.add('hidden');
+    document.getElementById('downloadContainer').classList.remove('hidden');
   }
 
   // Hiển thị kết quả
@@ -153,6 +153,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i]);
   }
 });
