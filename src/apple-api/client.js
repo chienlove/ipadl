@@ -13,42 +13,66 @@ export class AppleStoreClient {
     this.scnt = '';
     this.authToken = '';
     this.dsPersonId = '';
+    this.userAgent = 'com.apple.AppStore/1.0 iOS/17.0 model/iPhone15,3';
   }
 
   async _makeRequest(url, options, isRetry = false) {
     try {
-      const response = await fetch(url, options);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
 
-      // Lấy SCNT & Session ID nếu bị yêu cầu xác thực 2 bước
-      if (response.status === 409 && !isRetry) {
-        this.scnt = response.headers.get('scnt');
-        this.authToken = response.headers.get('x-apple-id-session-id');
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          ...options.headers,
+          'Accept-Language': 'en-US,en;q=0.9',
+          'X-Apple-I-FD-Client-Info': JSON.stringify({
+            'U': this.userAgent,
+            'L': 'en-US',
+            'Z': 'GMT+07:00',
+            'V': '1.1',
+            'F': ''
+          })
+        }
+      });
+
+      clearTimeout(timeout);
+
+      // Xử lý các response code đặc biệt
+      if (response.status === 409) {
+        this.scnt = response.headers.get('scnt') || '';
+        this.authToken = response.headers.get('x-apple-id-session-id') || '';
+        
+        if (!this.scnt || !this.authToken) {
+          throw new Error('Missing required 2FA headers from Apple');
+        }
+        
         return this._handle2FARequired();
       }
 
-      // Đọc phản hồi text (có thể là JSON hoặc HTML lỗi)
+      if (response.status === 423) {
+        throw new Error('Account locked. Please visit iforgot.apple.com to unlock.');
+      }
+
       const text = await response.text();
       let data;
 
       try {
-        data = JSON.parse(text);
-      } catch (jsonError) {
-        console.error('[AppleStoreClient] ⚠️ Phản hồi KHÔNG PHẢI JSON từ Apple:');
-        console.error(text);
-        throw new Error('Phản hồi từ Apple không hợp lệ (không phải JSON)');
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        console.error('Failed to parse Apple response:', text);
+        throw new Error('Invalid response format from Apple');
       }
 
       if (!response.ok) {
-        console.error('[AppleStoreClient] ❌ Apple trả lỗi:', data);
-        throw new Error(data.customerMessage || `Apple API error: ${response.statusText}`);
+        const appleError = data.serviceErrors?.[0] || data.error || data.customerMessage || data.failureReason;
+        throw new Error(appleError || `Apple API error: ${response.statusText}`);
       }
 
       return data;
     } catch (error) {
-      console.error('❗ Request to Apple API failed:', {
-        message: error.message,
-        stack: error.stack
-      });
+      console.error('Apple API request failed:', error.message);
       throw error;
     }
   }
@@ -73,7 +97,10 @@ export class AppleStoreClient {
       body: JSON.stringify(body)
     });
 
-    this.dsPersonId = response.dsPersonId;
+    if (response.dsPersonId) {
+      this.dsPersonId = response.dsPersonId;
+    }
+
     return response;
   }
 
@@ -87,7 +114,7 @@ export class AppleStoreClient {
       creditDisplay: '',
       guid: uuidv4(),
       salableAdamId: appId,
-      appExtVrsId: appVersionId
+      appExtVrsId: appVersionId || '0'
     };
 
     const response = await this._makeRequest(APPLE_DOWNLOAD_URL, {
@@ -107,19 +134,20 @@ export class AppleStoreClient {
       'X-Requested-With': 'XMLHttpRequest',
       'X-Apple-Api-Key': process.env.APPLE_API_KEY || 'cbf64fd6843ee630b463f358ea0b707b',
       'Accept': 'application/json',
-      'User-Agent': 'com.apple.AppStore/1.0 iOS/16.0 model/iPhone14,5'
+      'User-Agent': this.userAgent
     };
   }
 
   _getDownloadHeaders() {
     return {
-      'User-Agent': 'iOS/16.0 model/iPhone14,5',
+      'User-Agent': this.userAgent,
       'X-Apple-Store-Front': process.env.STORE_FRONT || '143465-19,32',
       'X-Dsid': this.dsPersonId,
       'X-Token': this.authToken,
       'Accept': 'application/json',
       'scnt': this.scnt,
-      'X-Apple-ID-Session-Id': this.authToken
+      'X-Apple-ID-Session-Id': this.authToken,
+      'X-Apple-Request-Context': 'signin'
     };
   }
 
