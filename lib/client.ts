@@ -39,6 +39,19 @@ class AppleClient {
       why: 'signIn',
     };
 
+    static async download(
+    appId: string,
+    dsid: string,
+    versionId?: string
+  ): Promise<AppleResponse> {
+    const guid = this.generateGuid();
+    const data = {
+      creditDisplay: '',
+      guid,
+      salableAdamId: appId,
+      ...(versionId && { externalVersionId: versionId }),
+    };
+
     try {
       const response = await this.client.post(
         `https://auth.itunes.apple.com/auth/v1/native/fast?guid=${guid}`,

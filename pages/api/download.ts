@@ -23,7 +23,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     if (result.status === 'failure') {
       console.error('Download failed:', result.failureType);
       
-      // Xử lý các loại lỗi đặc biệt
       if (result.failureType === 'invalidSecondFactor') {
         return res.status(401).json({
           error: '2FA verification required',
@@ -42,19 +41,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       });
     }
 
-    // Trả về thông tin download
     res.status(200).json({
       success: true,
       downloadUrl: result.downloadUrl,
       metadata: {
-        expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(), // 1 hour expiry
+        expiresAt: new Date(Date.now() + 3600 * 1000).toISOString(),
       },
     });
 
   } catch (error) {
     console.error('Download API error:', error);
     
-    // Phân loại lỗi
     if (error instanceof TypeError) {
       return res.status(400).json({
         error: 'Invalid request parameters',
