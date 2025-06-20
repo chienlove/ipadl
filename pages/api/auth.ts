@@ -10,25 +10,35 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const { email, password } = req.body;
     const result = await AppleClient.authenticate(email, password);
 
-    if (result.status === 'failure') {
-      let message = 'Đăng nhập thất bại';
-      if (result.failureType === 'invalidSecondFactor') {
-        message = result.authType === 'trusted_device' 
-          ? 'Vui lòng kiểm tra thiết bị tin cậy của bạn' 
-          : 'Vui lòng nhập mã xác minh 6 chữ số được gửi đến bạn';
-      }
+    console.log('Raw Apple API response:', result); // Debug quan trọng
 
-      return res.status(401).json({
-        error: message,
-        requires2FA: result.failureType === 'invalidSecondFactor',
-        message: message,
+    // Luôn trả về requires2FA ngay cả khi success nếu có authType
+    if (result.authType) {
+      return res.status(200).json({
+        success: true,
+        requires2FA: true,
+        dsid: result.dsid,
+        message: result.authType === 'trusted_device' 
+          ? 'Vui lòng kiểm tra thiết bị tin cậy' 
+          : 'Vui lòng nhập mã từ SMS',
         authType: result.authType
       });
     }
 
-    res.status(200).json({ success: true, dsid: result.dsid });
+    if (result.status === 'failure') {
+      return res.status(401).json({
+        error: result.message || 'Authentication failed',
+        requires2FA: false
+      });
+    }
+
+    res.status(200).json({ 
+      success: true,
+      dsid: result.dsid,
+      requires2FA: false
+    });
   } catch (error) {
     console.error('Auth error:', error);
-    res.status(500).json({ error: 'Lỗi máy chủ nội bộ' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
