@@ -17,38 +17,39 @@ export default function AuthPage() {
     setError('');
   }, [step]);
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const response = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+  // auth.tsx (sửa lại phần handleLogin)
+const handleLogin = async () => {
+  setIsLoading(true);
+  setError('');
+  try {
+    const response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    console.log('Full login response:', data);
+
+    // Sửa thành: Chuyển sang màn hình 2FA nếu có authType HOẶC requires2FA
+    if (data.authType || data.requires2FA) {
+      setDsid(data.dsid);
+      setVerifyInfo({
+        message: data.message || 'Vui lòng nhập mã xác minh 6 số',
+        type: data.authType || 'sms'  // Mặc định là SMS nếu không có authType
       });
-
-      const data = await response.json();
-      console.log('Full login response:', data); // Debug chi tiết
-
-      if (data.requires2FA) {
-        setDsid(data.dsid);
-        setVerifyInfo({
-          message: data.message,
-          type: data.authType
-        });
-        setStep('verify');
-      } else if (data.success) {
-        router.push('/');
-      } else {
-        setError(data.error || 'Đăng nhập thất bại');
-      }
-    } catch (err) {
-      setError('Lỗi kết nối máy chủ');
-      console.error('Login error:', err);
-    } finally {
-      setIsLoading(false);
+      setStep('verify');
+    } else if (data.success) {
+      router.push('/');
+    } else {
+      setError(data.error || 'Đăng nhập thất bại');
     }
-  };
+  } catch (err) {
+    setError('Lỗi kết nối máy chủ');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleVerify = async () => {
     setIsLoading(true);
