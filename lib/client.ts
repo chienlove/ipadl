@@ -3,7 +3,6 @@ import nodeFetch from 'node-fetch';
 import toughCookie from 'tough-cookie';
 import fetchCookie from 'fetch-cookie';
 
-// Cấu hình cookie jar
 const cookieJar = new toughCookie.CookieJar();
 const fetch = fetchCookie(nodeFetch, cookieJar);
 
@@ -23,12 +22,6 @@ class AppleClient {
     ).join('');
   }
 
-  /**
-   * Xác thực với Apple ID
-   * @param email Apple ID
-   * @param password Mật khẩu
-   * @param mfaCode Mã 2FA (nếu có)
-   */
   static async authenticate(
     email: string,
     password: string,
@@ -37,7 +30,7 @@ class AppleClient {
     const guid = this.generateGuid();
     const data = {
       appleId: email,
-      attempt: mfaCode ? 2 : 4, // 2 = 2FA attempt, 4 = initial attempt
+      attempt: mfaCode ? 2 : 4,
       createSession: 'true',
       guid,
       password: mfaCode ? `${password}${mfaCode}` : password,
@@ -55,7 +48,6 @@ class AppleClient {
     );
 
     const result = plist.parse(await response.text()) as any;
-    
     return {
       status: result.failureType ? 'failure' : 'success',
       dsid: result.dsPersonId,
@@ -65,12 +57,6 @@ class AppleClient {
     };
   }
 
-  /**
-   * Tải ứng dụng từ App Store
-   * @param appId ID ứng dụng (vd: 123456789)
-   * @param dsid DSID từ session đăng nhập
-   * @param versionId Phiên bản cụ thể (optional)
-   */
   static async download(
     appId: string,
     dsid: string,
@@ -98,7 +84,6 @@ class AppleClient {
     );
 
     const result = plist.parse(await response.text()) as any;
-    
     return {
       status: result.failureType ? 'failure' : 'success',
       downloadUrl: result.downloadUrl,
