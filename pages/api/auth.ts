@@ -1,5 +1,4 @@
-// pages/api/auth.ts
-import { NextApiRequest, NextApiResponse } from 'next'; // Thêm dòng này
+import { NextApiRequest, NextApiResponse } from 'next';
 import AppleClient from '../../lib/client';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -13,9 +12,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     console.log('Raw Apple API response:', result);
 
-    if (result.requires2FA || result.authType || result.failureType === 'invalidSecondFactor') {
+    // Phát hiện 2FA bằng nhiều điều kiện như mã gốc
+    const needs2FA = (
+      result.message?.toLowerCase().includes('mã xác minh') ||
+      result.message?.toLowerCase().includes('two-factor') ||
+      result.message?.toLowerCase().includes('mfa') ||
+      result.failureType?.toLowerCase().includes('mfa') ||
+      result.authType // Thêm điều kiện authType từ Apple
+    );
+
+    if (needs2FA) {
       return res.status(200).json({
-        success: true,
+        success: true, // Vẫn trả success=true để frontend xử lý
         requires2FA: true,
         dsid: result.dsid,
         message: result.authType === 'trusted_device' 
@@ -27,8 +35,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     if (result.status === 'failure') {
       return res.status(401).json({
-        error: result.message || 'Authentication failed',
-        requires2FA: false
+        success: false,
+        error: result.message || 'Authentication failed'
       });
     }
 

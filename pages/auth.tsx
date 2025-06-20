@@ -17,8 +17,7 @@ export default function AuthPage() {
     setError('');
   }, [step]);
 
-  // auth.tsx (sửa lại phần handleLogin)
-const handleLogin = async () => {
+  const handleLogin = async () => {
   setIsLoading(true);
   setError('');
   try {
@@ -31,17 +30,20 @@ const handleLogin = async () => {
     const data = await response.json();
     console.log('Full login response:', data);
 
-    // Sửa thành: Chuyển sang màn hình 2FA nếu có authType HOẶC requires2FA
-    if (data.authType || data.requires2FA) {
+    // Xử lý theo logic mới
+    if (data.success && !data.requires2FA) {
+      // Đăng nhập thành công không cần 2FA
+      router.push('/');
+    } else if (data.requires2FA) {
+      // Yêu cầu 2FA
       setDsid(data.dsid);
       setVerifyInfo({
         message: data.message || 'Vui lòng nhập mã xác minh 6 số',
-        type: data.authType || 'sms'  // Mặc định là SMS nếu không có authType
+        type: data.authType || 'sms'
       });
       setStep('verify');
-    } else if (data.success) {
-      router.push('/');
     } else {
+      // Lỗi đăng nhập
       setError(data.error || 'Đăng nhập thất bại');
     }
   } catch (err) {
