@@ -1,4 +1,7 @@
-// Trong file auth.ts (API route)
+// pages/api/auth.ts
+import { NextApiRequest, NextApiResponse } from 'next'; // Thêm dòng này
+import AppleClient from '../../lib/client';
+
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -8,18 +11,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const { email, password } = req.body;
     const result = await AppleClient.authenticate(email, password);
 
-    console.log('Raw Apple API response:', result); // Debug quan trọng
+    console.log('Raw Apple API response:', result);
 
-    // Sửa logic kiểm tra 2FA - quan trọng!
     if (result.requires2FA || result.authType || result.failureType === 'invalidSecondFactor') {
       return res.status(200).json({
         success: true,
-        requires2FA: true,  // Luôn trả về true nếu cần 2FA
+        requires2FA: true,
         dsid: result.dsid,
         message: result.authType === 'trusted_device' 
           ? 'Vui lòng kiểm tra thiết bị tin cậy' 
           : 'Vui lòng nhập mã từ SMS',
-        authType: result.authType || 'sms'  // Mặc định là SMS
+        authType: result.authType || 'sms'
       });
     }
 
