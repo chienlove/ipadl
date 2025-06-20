@@ -1,10 +1,7 @@
 import plist from 'plist';
-import nodeFetch from 'node-fetch';
-import toughCookie from 'tough-cookie';
-import fetchCookie from 'fetch-cookie';
-
-const cookieJar = new toughCookie.CookieJar();
-const fetch = fetchCookie(nodeFetch, cookieJar);
+import axios from 'axios';
+import { CookieJar } from 'tough-cookie';
+import { wrapper } from 'axios-cookiejar-support';
 
 interface AppleResponse {
   status: 'success' | 'failure';
@@ -13,9 +10,13 @@ interface AppleResponse {
   downloadUrl?: string;
   authType?: string;
   message?: string;
+  requires2FA?: boolean;
 }
 
 class AppleClient {
+  private static jar = new CookieJar();
+  private static client = wrapper(axios.create({ jar: this.jar, withCredentials: true }));
+
   private static generateGuid(): string {
     return Array.from({ length: 12 }, () =>
       Math.floor(Math.random() * 16).toString(16).toUpperCase()
@@ -38,23 +39,34 @@ class AppleClient {
       why: 'signIn',
     };
 
-    const response = await fetch(
-      `https://auth.itunes.apple.com/auth/v1/native/fast?guid=${guid}`,
-      {
-        method: 'POST',
-        body: plist.build(data),
-        headers: this.getAuthHeaders(),
-      }
-    );
+    try {
+      const response = await this.client.post(
+        `https://auth.itunes.apple.com/auth/v1/native/fast?guid=${guid}`,
+        plist.build(data),
+        {
+          headers: this.getAuthHeaders(),
+          responseType: 'text',
+          timeout: 10000
+        }
+      );
 
-    const result = plist.parse(await response.text()) as any;
-    return {
-      status: result.failureType ? 'failure' : 'success',
-      dsid: result.dsPersonId,
-      failureType: result.failureType,
-      authType: result.authType,
-      message: result.failureMessage,
-    };
+      const result = plist.parse(response.data) as any;
+      return {
+        status: result.failureType ? 'failure' : 'success',
+        dsid: result.dsPersonId,
+        failureType: result.failureType,
+        authType: result.authType,
+        message: result.failureMessage,
+        requires2FA: result.failureType === 'invalidSecondFactor'
+      };
+    } catch (error: any) {
+      console.error('Auth error:', error.message);
+      return {
+        status: 'failure',
+        failureType: 'network_error',
+        message: 'Failed to connect to Apple servers'
+      };
+    }
   }
 
   static async download(
@@ -70,25 +82,36 @@ class AppleClient {
       ...(versionId && { externalVersionId: versionId }),
     };
 
-    const response = await fetch(
-      `https://p25-buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/volumeStoreDownloadProduct?guid=${guid}`,
-      {
-        method: 'POST',
-        body: plist.build(data),
-        headers: {
-          ...this.getAuthHeaders(),
-          'X-Dsid': dsid,
-          'iCloud-DSID': dsid,
-        },
-      }
-    );
+    try {
+      const response = await this.client.post(
+        `https://p25-buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/volumeStoreDownloadProduct?guid=${guid}`,
+        plist.build(data),
+        {
+          headers: {
+            ...this.getAuthHeaders(),
+            'X-Dsid': dsid,
+            'iCloud-DSID': dsid,
+          },
+          responseType: 'text',
+          timeout: 15000
+        }
+      );
 
-    const result = plist.parse(await response.text()) as any;
-    return {
-      status: result.failureType ? 'failure' : 'success',
-      downloadUrl: result.downloadUrl,
-      failureType: result.failureType,
-    };
+      const result = plist.parse(response.data) as any;
+      return {
+        status: result.failureType ? 'failure' : 'success',
+        downloadUrl: result.downloadUrl,
+        failureType: result.failureType,
+        requires2FA: result.failureType === 'invalidSecondFactor'
+      };
+    } catch (error: any) {
+      console.error('Download error:', error.message);
+      return {
+        status: 'failure',
+        failureType: 'network_error',
+        message: 'Failed to process download'
+      };
+    }
   }
 
   private static getAuthHeaders() {
@@ -96,6 +119,7 @@ class AppleClient {
       'User-Agent': 'Configurator/2.15 (Macintosh; OS X 11.0.0; 16G29) AppleWebKit/2603.3.8',
       'Content-Type': 'application/x-apple-plist',
       'Accept': '*/*',
+      'Connection': 'keep-alive'
     };
   }
 }
