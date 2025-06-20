@@ -1,7 +1,7 @@
-const plist = require('plist');
-const axios = require('axios');
-const { CookieJar } = require('tough-cookie');
-const { wrapper } = require('axios-cookiejar-support');
+import plist from 'plist';
+import axios from 'axios';
+import { CookieJar } from 'tough-cookie';
+import { wrapper } from 'axios-cookiejar-support';
 
 class AppleClient {
     static jar = new CookieJar();
