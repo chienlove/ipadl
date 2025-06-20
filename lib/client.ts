@@ -39,7 +39,37 @@ class AppleClient {
       why: 'signIn',
     };
 
-    static async download(
+    try {
+      const response = await this.client.post(
+        `https://auth.itunes.apple.com/auth/v1/native/fast?guid=${guid}`,
+        plist.build(data),
+        {
+          headers: this.getAuthHeaders(),
+          responseType: 'text',
+          timeout: 10000
+        }
+      );
+
+      const result = plist.parse(response.data) as any;
+      return {
+        status: result.failureType ? 'failure' : 'success',
+        dsid: result.dsPersonId,
+        failureType: result.failureType,
+        authType: result.authType,
+        message: result.failureMessage,
+        requires2FA: result.failureType === 'invalidSecondFactor'
+      };
+    } catch (error: any) {
+      console.error('Auth error:', error.response?.data || error.message);
+      return {
+        status: 'failure',
+        failureType: 'network_error',
+        message: 'Failed to connect to Apple servers'
+      };
+    }
+  }
+
+  static async download(
     appId: string,
     dsid: string,
     versionId?: string
