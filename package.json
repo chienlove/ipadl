@@ -1,27 +1,18 @@
 {
-  "name": "apple-downloader",
+  "name": "ipadl-pro",
   "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "build": "npm install --omit=dev",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "engines": {
-    "node": ">=18.0.0"
+    "dev": "vercel dev"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "node-fetch": "^3.3.1",
-    "uuid": "^9.0.0",
-    "dotenv": "^16.3.1",
-    "compression": "^1.7.4",
-    "helmet": "^7.1.0",
-    "express-rate-limit": "^6.7.0",
-    "adm-zip": "^0.5.10"
+    "@vercel/node": "^2.15.3",
+    "plist": "^3.0.6",
+    "getmac": "^5.19.0",
+    "fetch-cookie": "^2.1.0",
+    "node-fetch": "^2.6.7",
+    "tough-cookie": "^4.1.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "vercel": "^28.16.11"
   }
 }

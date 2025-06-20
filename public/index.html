@@ -1,82 +1,397 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <title>IPADL Pro - Đăng nhập</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Apple App Downloader</title>
-  <link rel="stylesheet" href="/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+    .toast { padding: 10px 20px; margin-bottom: 10px; border-radius: 5px; display: flex; align-items: center; }
+    .toast-success { background: #4caf50; color: white; }
+    .toast-error { background: #f44336; color: white; }
+    .toast-icon { margin-right: 10px; }
+    .hidden { display: none !important; }
+    .fade-in { animation: fadeIn 0.3s; }
+    .fade-out { animation: fadeOut 0.3s; }
+    .button-loading { opacity: 0.6; cursor: not-allowed; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+  </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>📱 App Store Downloader</h1>
-      <p>Tải ứng dụng iOS từ Apple App Store</p>
-    </header>
+<body class="bg-gradient-to-br from-blue-50 to-gray-100 min-h-screen p-4">
+  <div class="max-w-xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl">
+    <div class="p-6 space-y-6">
+      <h1 class="text-3xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-500">
+        🚀 IPADL Pro - Đăng nhập
+      </h1>
 
-    <main>
-      <div class="auth-form" id="loginForm">
-        <h2>Đăng nhập Apple ID</h2>
-        <form id="authForm">
-          <div class="form-group">
-            <label for="appleId">Apple ID</label>
-            <input type="email" id="appleId" required>
+      <!-- Security notice -->
+      <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <div class="flex">
+          <div class="flex-shrink-0 text-yellow-400">
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
           </div>
-          <div class="form-group">
-            <label for="password">Mật khẩu</label>
-            <input type="password" id="password" required>
+          <div class="ml-3">
+            <p class="text-sm text-yellow-700">
+              <strong>Lưu ý bảo mật:</strong> Chúng tôi không lưu trữ thông tin đăng nhập của bạn. Mọi thông tin chỉ được sử dụng để xác thực với Apple.
+            </p>
           </div>
-          <button type="submit">Tiếp tục</button>
-        </form>
-      </div>
-
-      <div class="auth-form hidden" id="twoFaContainer">
-        <h2>Xác thực 2 bước</h2>
-        <form id="twoFaForm">
-          <p id="twoFaMessage">Vui lòng nhập mã 6 chữ số đã gửi đến thiết bị của bạn</p>
-          <div class="form-group">
-            <label for="code">Mã xác thực</label>
-            <input type="text" id="code" pattern="\d{6}" required>
-          </div>
-          <button type="submit">Xác nhận</button>
-        </form>
-      </div>
-
-      <div class="download-form hidden" id="downloadContainer">
-        <h2>Tải ứng dụng</h2>
-        <form id="downloadForm">
-          <div class="form-group">
-            <label for="appId">App ID (số)</label>
-            <input type="text" id="appId" pattern="\d+" required>
-          </div>
-          <div class="form-group">
-            <label for="appVersionId">Version ID (để trống nếu không biết)</label>
-            <input type="text" id="appVersionId">
-          </div>
-          <button type="submit">Tải xuống</button>
-        </form>
-      </div>
-
-      <div class="result hidden" id="resultSection">
-        <h2>Tải xuống thành công!</h2>
-        <div class="app-info" id="appInfo">
-          <!-- App info will be inserted here -->
         </div>
-        <a id="downloadLink" class="download-btn" href="#" target="_blank">Tải file IPA</a>
-        <p class="note">Lưu ý: File chưa được ký, cần công cụ đặc biệt để cài đặt</p>
       </div>
 
-      <div class="error hidden" id="errorSection">
-        <h2>Đã xảy ra lỗi</h2>
-        <p id="errorMessage"></p>
-        <button id="retryButton">Thử lại</button>
+      <!-- Error box -->
+      <div id="errorBox" class="hidden bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+        <div class="flex">
+          <div class="flex-shrink-0 text-red-400">
+            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <div class="ml-3">
+            <p id="errorMessage" class="text-sm text-red-700"></p>
+          </div>
+        </div>
       </div>
-    </main>
 
-    <footer>
-      <p>Chỉ sử dụng cho ứng dụng bạn đã mua. Không hỗ trợ ứng dụng miễn phí.</p>
-    </footer>
+      <!-- Step 1: Apple ID Login -->
+      <div id="loginForm" class="space-y-4">
+        <div class="space-y-1">
+          <label for="APPLE_ID" class="block text-sm font-medium text-gray-700">Apple ID</label>
+          <input id="APPLE_ID" name="APPLE_ID" required type="email"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            placeholder="your@appleid.com"
+            autocomplete="username">
+        </div>
+
+        <div class="space-y-1 relative">
+          <label for="PASSWORD" class="block text-sm font-medium text-gray-700">Mật khẩu Apple ID</label>
+          <div class="relative">
+            <input id="PASSWORD" name="PASSWORD" required type="password"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-12"
+              placeholder="••••••••"
+              autocomplete="current-password">
+            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+              <i class="fas fa-eye-slash"></i>
+            </button>
+          </div>
+          <p class="text-xs text-gray-500">Sử dụng mật khẩu Apple ID của bạn. Nếu có bật 2FA, bạn sẽ được yêu cầu nhập mã xác minh.</p>
+        </div>
+
+        <button id="loginBtn"
+          class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 font-semibold flex items-center justify-center shadow-md hover:shadow-lg">
+          Đăng nhập
+        </button>
+      </div>
+
+      <!-- Step 2: 2FA Verification -->
+      <div id="verifyForm" class="hidden space-y-4">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+          <div class="flex">
+            <div class="flex-shrink-0 text-blue-500">
+              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p id="verifyMessage" class="text-sm text-blue-700">
+                Vui lòng nhập mã xác minh 6 chữ số được gửi đến thiết bị của bạn
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label for="VERIFICATION_CODE" class="block text-sm font-medium text-gray-700">Mã xác minh 2FA</label>
+          <input id="VERIFICATION_CODE" name="VERIFICATION_CODE" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            placeholder="123456"
+            maxlength="6"
+            inputmode="numeric"
+            pattern="\d{6}">
+        </div>
+
+        <button id="verifyBtn"
+          class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-4 rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 font-semibold flex items-center justify-center shadow-md hover:shadow-lg">
+          Xác thực
+        </button>
+
+        <button id="backToLoginBtn"
+          class="w-full bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold flex items-center justify-center shadow-md hover:shadow-lg">
+          Quay lại đăng nhập
+        </button>
+      </div>
+
+      <!-- Result -->
+      <div id="result" class="hidden">
+        <div class="flex items-center mb-6">
+          <div class="w-12 h-12 bg-green-100 text-green-600 flex items-center justify-center rounded-full mr-4">
+            <i class="fas fa-check-circle text-xl"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900">Đăng nhập thành công!</h2>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-gray-700 mb-2"><strong>Trạng thái:</strong> <span id="authStatus"></span></p>
+          <p class="text-gray-700 mb-2"><strong>DSID:</strong> <span id="dsid"></span></p>
+          <p class="text-gray-700"><strong>2FA:</strong> <span id="twoFAStatus"></span></p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script src="/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // DOM Elements
+      const elements = {
+        loginForm: document.getElementById('loginForm'),
+        verifyForm: document.getElementById('verifyForm'),
+        result: document.getElementById('result'),
+        loginBtn: document.getElementById('loginBtn'),
+        verifyBtn: document.getElementById('verifyBtn'),
+        backToLoginBtn: document.getElementById('backToLoginBtn'),
+        errorBox: document.getElementById('errorBox'),
+        errorMessage: document.getElementById('errorMessage'),
+        verifyMessage: document.getElementById('verifyMessage'),
+        togglePassword: document.getElementById('togglePassword'),
+        passwordInput: document.getElementById('PASSWORD'),
+        appleIdInput: document.getElementById('APPLE_ID'),
+        verificationCodeInput: document.getElementById('VERIFICATION_CODE'),
+        authStatus: document.getElementById('authStatus'),
+        dsid: document.getElementById('dsid'),
+        twoFAStatus: document.getElementById('twoFAStatus')
+      };
+
+      // App State
+      const state = {
+        APPLE_ID: '',
+        PASSWORD: '',
+        CODE: '',
+        verified2FA: false,
+        dsid: null,
+        requires2FA: false
+      };
+
+      let isLoading = false;
+
+      // Toast system
+      const toastContainer = document.createElement('div');
+      toastContainer.id = 'toast-container';
+      toastContainer.className = 'toast-container';
+      document.body.appendChild(toastContainer);
+
+      const showToast = (message, type = 'success') => {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type} fade-in`;
+        toast.innerHTML = `
+          <span class="toast-icon">${type === 'success' ? '✓' : '✗'}</span>
+          <span>${message}</span>
+        `;
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.classList.add('show');
+        }, 10);
+
+        setTimeout(() => {
+          toast.classList.add('fade-out');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      };
+
+      const showError = (msg) => {
+        if (elements.errorMessage && elements.errorBox) {
+          elements.errorMessage.textContent = msg;
+          elements.errorBox.classList.remove('hidden');
+        } else {
+          alert(msg);
+        }
+      };
+      
+      const hideError = () => {
+        if (elements.errorBox) {
+          elements.errorBox.classList.add('hidden');
+        }
+      };
+
+      const transition = (from, to) => {
+        if (!from || !to) return;
+        
+        from.classList.add('fade-out');
+        setTimeout(() => {
+          from.classList.add('hidden');
+          from.classList.remove('fade-out');
+          to.classList.remove('hidden');
+          to.classList.add('fade-in');
+          setTimeout(() => to.classList.remove('fade-in'), 300);
+        }, 300);
+      };
+
+      const setLoading = (loading) => {
+        isLoading = loading;
+        document.querySelectorAll('button').forEach(btn => {
+          if (btn) {
+            btn.disabled = loading;
+            btn.classList.toggle('button-loading', loading);
+          }
+        });
+      };
+
+      // Event handlers
+      if (elements.togglePassword) {
+        elements.togglePassword.addEventListener('click', () => {
+          const isPassword = elements.passwordInput.type === 'password';
+          elements.passwordInput.type = isPassword ? 'text' : 'password';
+          elements.togglePassword.innerHTML = isPassword ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+        });
+      }
+
+      if (elements.loginBtn) {
+        elements.loginBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          if (isLoading) return;
+          
+          hideError();
+          setLoading(true);
+
+          const APPLE_ID = elements.appleIdInput?.value.trim() || '';
+          const PASSWORD = elements.passwordInput?.value || '';
+          
+          if (!APPLE_ID || !PASSWORD) {
+            showError('Vui lòng nhập Apple ID và mật khẩu.');
+            setLoading(false);
+            return;
+          }
+
+          state.APPLE_ID = APPLE_ID;
+          state.PASSWORD = PASSWORD;
+
+          try {
+            const response = await fetch('/auth', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ APPLE_ID, PASSWORD })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              showError(data.error || 'Lỗi từ máy chủ.');
+              setLoading(false);
+              return;
+            }
+
+            if (data.require2FA || data.authType === '2fa') {
+              state.requires2FA = true;
+              state.dsid = data.dsid || null;
+              let message = data.message || '';
+              
+              if (message.includes('MZFinance.BadLogin.Configurator_message')) {
+                message = 'Thiết bị cần xác minh bảo mật. Vui lòng kiểm tra thiết bị tin cậy của bạn.';
+              } else if (message.toLowerCase().includes('code')) {
+                message = 'Vui lòng nhập mã xác minh 6 chữ số được gửi đến thiết bị tin cậy.';
+              }
+
+              elements.verifyMessage.textContent = message || 'Vui lòng nhập mã xác minh 6 chữ số';
+              transition(elements.loginForm, elements.verifyForm);
+              setLoading(false);
+              return;
+            }
+
+            if (data.success) {
+              state.requires2FA = false;
+              state.verified2FA = true;
+              state.dsid = data.dsid || null;
+              
+              // Hiển thị kết quả
+              elements.authStatus.textContent = 'Thành công';
+              elements.dsid.textContent = state.dsid || 'Không có';
+              elements.twoFAStatus.textContent = state.requires2FA ? 'Có' : 'Không';
+              
+              showToast('Đăng nhập thành công!');
+              transition(elements.loginForm, elements.result);
+              setLoading(false);
+            } else {
+              showError(data.error || 'Đăng nhập thất bại');
+              setLoading(false);
+            }
+          } catch (error) {
+            console.error('Auth error:', error);
+            showError('Không thể kết nối tới máy chủ.');
+            setLoading(false);
+          }
+        });
+      }
+
+      if (elements.verifyBtn) {
+        elements.verifyBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          if (isLoading) return;
+          
+          hideError();
+          setLoading(true);
+
+          const CODE = elements.verificationCodeInput?.value.trim() || '';
+          if (CODE.length !== 6) {
+            showError('Mã xác minh phải có 6 chữ số.');
+            setLoading(false);
+            return;
+          }
+
+          try {
+            const response = await fetch('/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                APPLE_ID: state.APPLE_ID, 
+                PASSWORD: state.PASSWORD, 
+                CODE,
+                dsid: state.dsid 
+              })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              showError(data.error || 'Xác minh thất bại.');
+              setLoading(false);
+              return;
+            }
+
+            if (data.success) {
+              state.CODE = CODE;
+              state.verified2FA = true;
+              state.dsid = data.dsid || state.dsid;
+              
+              // Hiển thị kết quả
+              elements.authStatus.textContent = 'Thành công';
+              elements.dsid.textContent = state.dsid || 'Không có';
+              elements.twoFAStatus.textContent = 'Đã xác thực';
+              
+              showToast('Xác thực 2FA thành công!');
+              transition(elements.verifyForm, elements.result);
+              setLoading(false);
+            } else {
+              showError(data.error || 'Mã xác minh không đúng.');
+              setLoading(false);
+            }
+          } catch (error) {
+            console.error('Verify error:', error);
+            showError('Không thể kết nối tới máy chủ.');
+            setLoading(false);
+          }
+        });
+      }
+
+      if (elements.backToLoginBtn) {
+        elements.backToLoginBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          transition(elements.verifyForm, elements.loginForm);
+        });
+      }
+    });
+  </script>
 </body>
 </html>
