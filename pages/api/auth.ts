@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import AppleStore from '../../lib/client';
+import AppleClient from '../../lib/client';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== 'POST') {
@@ -8,17 +8,28 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     const { email, password } = req.body;
-    const result = await AppleStore.authenticate(email, password);
+    
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+
+    const result = await AppleClient.authenticate(email, password);
+    console.log('Auth result:', JSON.stringify(result, null, 2));
 
     if (result.status === 'failure') {
       return res.status(401).json({
-        error: result.failureType || 'Authentication failed',
-        requires2FA: result.failureType === 'invalidSecondFactor',
+        error: result.message || 'Authentication failed',
+        requires2FA: result.requires2FA,
+        authType: result.authType
       });
     }
 
-    res.status(200).json({ success: true, dsid: result.dsid });
+    return res.status(200).json({ 
+      success: true,
+      dsid: result.dsid
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('API auth error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

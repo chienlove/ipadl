@@ -60,7 +60,7 @@ class AppleClient {
         requires2FA: result.failureType === 'invalidSecondFactor'
       };
     } catch (error: any) {
-      console.error('Auth error:', error.message);
+      console.error('Auth error:', error.response?.data || error.message);
       return {
         status: 'failure',
         failureType: 'network_error',
@@ -69,57 +69,11 @@ class AppleClient {
     }
   }
 
-  static async download(
-    appId: string,
-    dsid: string,
-    versionId?: string
-  ): Promise<AppleResponse> {
-    const guid = this.generateGuid();
-    const data = {
-      creditDisplay: '',
-      guid,
-      salableAdamId: appId,
-      ...(versionId && { externalVersionId: versionId }),
-    };
-
-    try {
-      const response = await this.client.post(
-        `https://p25-buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/volumeStoreDownloadProduct?guid=${guid}`,
-        plist.build(data),
-        {
-          headers: {
-            ...this.getAuthHeaders(),
-            'X-Dsid': dsid,
-            'iCloud-DSID': dsid,
-          },
-          responseType: 'text',
-          timeout: 15000
-        }
-      );
-
-      const result = plist.parse(response.data) as any;
-      return {
-        status: result.failureType ? 'failure' : 'success',
-        downloadUrl: result.downloadUrl,
-        failureType: result.failureType,
-        requires2FA: result.failureType === 'invalidSecondFactor'
-      };
-    } catch (error: any) {
-      console.error('Download error:', error.message);
-      return {
-        status: 'failure',
-        failureType: 'network_error',
-        message: 'Failed to process download'
-      };
-    }
-  }
-
   private static getAuthHeaders() {
     return {
       'User-Agent': 'Configurator/2.15 (Macintosh; OS X 11.0.0; 16G29) AppleWebKit/2603.3.8',
       'Content-Type': 'application/x-apple-plist',
-      'Accept': '*/*',
-      'Connection': 'keep-alive'
+      'Accept': '*/*'
     };
   }
 }
