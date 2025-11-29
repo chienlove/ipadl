@@ -27,37 +27,56 @@
       }
 
       :root {
+        color-scheme: light dark;
         --bg: radial-gradient(circle at top, #0f172a, #020617 55%, #020617);
-        --card-bg: rgba(15, 23, 42, 0.9);
-        --card-secondary: rgba(15, 23, 42, 0.85);
-        --input-bg: rgba(15, 23, 42, 0.92);
-        --summary-bg: #f9fafb;
-        --summary-border: #e5e7eb;
-
+        --card-bg: rgba(15, 23, 42, 0.96);
+        --card-secondary: rgba(15, 23, 42, 0.9);
+        --input-bg: rgba(15, 23, 42, 0.9);
         --text: #e5e7eb;
         --muted: #9ca3af;
         --border: rgba(148, 163, 184, 0.5);
         --primary: #3b82f6;
-        --primary-soft: rgba(59, 130, 246, 0.25);
+        --primary-soft: rgba(59, 130, 246, 0.3);
         --success: #22c55e;
         --danger: #ef4444;
-        --danger-soft: rgba(239, 68, 68, 0.08);
+
+        --summary-bg: #f9fafb;
+        --summary-border: #e5e7eb;
+        --summary-text: #111827;
+
+        --history-bg: #f9fafb;
+        --history-text: #111827;
       }
 
       @media (prefers-color-scheme: light) {
         :root {
           --bg: radial-gradient(circle at top, #eff6ff, #dbeafe 45%, #eff6ff);
-          --card-bg: rgba(255, 255, 255, 0.96);
-          --card-secondary: rgba(255, 255, 255, 0.96);
+          --card-bg: #ffffff;
+          --card-secondary: #ffffff;
           --input-bg: #f9fafb;
-          --summary-bg: #f9fafb;
-          --summary-border: #e5e7eb;
-
           --text: #0f172a;
           --muted: #6b7280;
           --border: rgba(148, 163, 184, 0.6);
           --primary: #2563eb;
           --primary-soft: rgba(37, 99, 235, 0.18);
+
+          --summary-bg: #f9fafb;
+          --summary-border: #e5e7eb;
+          --summary-text: #111827;
+
+          --history-bg: #f9fafb;
+          --history-text: #111827;
+        }
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --summary-bg: rgba(15, 23, 42, 0.9);
+          --summary-border: rgba(148, 163, 184, 0.6);
+          --summary-text: #f9fafb;
+
+          --history-bg: rgba(15, 23, 42, 0.95);
+          --history-text: #e5e7eb;
         }
       }
 
@@ -142,7 +161,7 @@
         padding: 10px 12px;
         border-radius: 14px;
         border: 1px solid rgba(148, 163, 184, 0.4);
-        background: rgba(15, 23, 42, 0.65);
+        background: rgba(15, 23, 42, 0.7);
         margin-bottom: 14px;
       }
 
@@ -300,13 +319,25 @@
       }
 
       #status-box.error {
-        background: var(--danger-soft);
+        background: rgba(239, 68, 68, 0.08);
         border: 1px solid rgba(239, 68, 68, 0.6);
         color: var(--danger);
       }
 
+      .app-info-section {
+        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(148, 163, 184, 0.5);
+      }
+
+      .app-info-title {
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--muted);
+      }
+
       .app-summary {
-        margin-top: 16px;
         padding: 14px 13px;
         border-radius: 16px;
         background: var(--summary-bg);
@@ -343,7 +374,7 @@
       .app-name {
         font-size: 15px;
         font-weight: 700;
-        color: #0f172a;
+        color: var(--summary-text);
       }
 
       .app-meta small {
@@ -362,31 +393,13 @@
       }
 
       @media (prefers-color-scheme: dark) {
-        .app-name {
-          color: #f9fafb;
-        }
         .app-meta small,
         .chip {
           color: #e5e7eb;
         }
-        .chip {
-          border-color: rgba(148, 163, 184, 0.9);
-        }
       }
 
-      .json-box {
-        margin-top: 14px;
-        background: rgba(15, 23, 42, 0.96);
-        border-radius: 12px;
-        padding: 10px;
-        white-space: pre-wrap;
-        font-size: 11px;
-        max-height: 220px;
-        overflow-y: auto;
-        color: #e5e7eb;
-        border: 1px solid rgba(148, 163, 184, 0.6);
-      }
-
+      /* HISTORY */
       .history-title {
         font-size: 14px;
         font-weight: 600;
@@ -409,11 +422,12 @@
       .history-item {
         border-radius: 12px;
         padding: 9px 10px;
-        background: rgba(15, 23, 42, 0.9);
-        border: 1px solid rgba(148, 163, 184, 0.5);
+        background: var(--history-bg);
+        border: 1px solid rgba(148, 163, 184, 0.6);
         font-size: 12px;
         cursor: pointer;
         transition: 0.15s;
+        color: var(--history-text);
       }
 
       .history-item:hover {
@@ -468,25 +482,25 @@
           <ul>
             <li>
               Thêm ứng dụng <strong>miễn phí</strong> vào mục
-              <strong>Đã mua</strong> của Apple ID mà không cần cầm thiết bị đó
-              trên tay.
+              <strong>Đã mua</strong> của Apple ID mà không cần dùng trực tiếp
+              thiết bị đó.
             </li>
             <li>
               Sau khi app đã nằm trong “Đã mua”, trên các máy iOS khác cùng
-              Apple ID bạn có thể mở App Store → vào mục Đã mua →
+              Apple ID bạn có thể vào App Store → Đã mua →
               <strong>tải lại phiên bản tương thích</strong> với iOS thấp hơn
-              (nếu nhà phát triển vẫn cho phép).
+              (khi nhà phát triển vẫn cho phép tải bản cũ).
             </li>
             <li>
-              Hữu ích khi bạn:
+              Phù hợp khi bạn:
               <br />– Dùng Apple ID phụ cho gia đình / con cái.<br />– Muốn
               “giữ chỗ” ứng dụng miễn phí vào lịch sử mua để dễ tải lại về sau.
             </li>
           </ul>
           <p style="margin-top:6px">
-            Lưu ý: Công cụ chỉ thay bạn gửi yêu cầu mua app miễn phí đến Apple,
-            không can thiệp vào máy chủ Apple. Nên sử dụng cho Apple ID phụ của
-            chính bạn.
+            Công cụ chỉ gửi yêu cầu hợp lệ lên máy chủ Apple (qua ipatool),
+            không can thiệp hay sửa dữ liệu phía Apple. Nên ưu tiên sử dụng
+            với Apple ID phụ của chính bạn.
           </p>
         </div>
 
@@ -556,8 +570,8 @@
             </div>
             <p class="helper">
               Bạn có thể dán nguyên link App Store, nhập App ID dạng số, hoặc
-              gõ trực tiếp bundle ID. Hệ thống sẽ tự tra trên App Store và gửi
-              <strong>Bundle ID</strong> chuẩn cho server.
+              gõ trực tiếp bundle ID. Dữ liệu sẽ được gửi nguyên vẹn lên server
+              để xử lý (không ép kiểu ở phía trình duyệt).
             </p>
           </div>
 
@@ -569,9 +583,11 @@
 
         <div id="status-box"></div>
 
-        <div id="app-summary-container"></div>
-
-        <pre id="json-raw" class="json-box" style="display:none"></pre>
+        <!-- Chỉ hiển thị sau khi thêm thành công -->
+        <div id="app-info-root" class="app-info-section" style="display:none">
+          <div class="app-info-title">Thông tin ứng dụng đã thêm</div>
+          <div id="app-summary-container"></div>
+        </div>
       </div>
 
       <!-- RIGHT: HISTORY -->
@@ -600,13 +616,13 @@
       const pwdInput = $('#PASSWORD');
       const togglePwd = $('#togglePwd');
       const statusBox = $('#status-box');
-      const jsonRaw = $('#json-raw');
-      const appSummaryContainer = $('#app-summary-container');
       const submitBtn = $('#submitBtn');
       const btnIcon = $('#btnIcon');
       const btnText = $('#btnText');
       const inputField = $('#INPUT');
       const historyRoot = $('#history-root');
+      const appInfoRoot = $('#app-info-root');
+      const appSummaryContainer = $('#app-summary-container');
 
       /* ==== PASSWORD EYE ==== */
       togglePwd.addEventListener('click', () => {
@@ -629,47 +645,34 @@
         statusBox.style.display = 'none';
       }
 
-      /* ==== APP LOOKUP – cố lấy bundleId triệt để ==== */
+      /* ==== APP LOOKUP – chỉ dùng để hiển thị, KHÔNG chặn xử lý ==== */
       async function lookupApp(raw) {
         let input = (raw || '').trim();
         if (!input) return null;
 
-        let countryCandidates = [];
         let appId = null;
         let bundleId = null;
+        let ccFromUrl = null;
 
-        // Nếu là URL App Store
         const urlMatch = input.match(
           /^https?:\/\/apps\.apple\.com\/([a-z]{2})\//i
         );
         if (urlMatch) {
-          const cc = urlMatch[1].toLowerCase();
-          if (cc) countryCandidates.push(cc);
-
+          ccFromUrl = urlMatch[1].toLowerCase();
           const idMatch = input.match(/id(\d{5,})/);
-          if (idMatch) {
-            appId = idMatch[1];
-          }
+          if (idMatch) appId = idMatch[1];
         } else if (/^\d{5,}$/.test(input)) {
-          // toàn số -> App ID
           appId = input;
         } else if (input.includes('.')) {
-          // bundleId
           bundleId = input;
         }
 
-        // nếu chưa có quốc gia, ưu tiên VN trước
-        if (!countryCandidates.length) {
-          countryCandidates.push('vn');
-        }
-        // thêm fallback US
-        if (!countryCandidates.includes('us')) countryCandidates.push('us');
+        const countries = [];
+        if (ccFromUrl) countries.push(ccFromUrl);
+        if (!countries.includes('vn')) countries.push('vn');
+        if (!countries.includes('us')) countries.push('us');
 
-        // helper gọi iTunes API
-        async function tryLookupById(id, country) {
-          const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(
-            id
-          )}&country=${encodeURIComponent(country)}`;
+        async function tryLookup(url) {
           const res = await fetch(url);
           if (!res.ok) return null;
           const data = await res.json();
@@ -677,22 +680,14 @@
           return null;
         }
 
-        async function tryLookupByBundle(bid, country) {
-          const url = `https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(
-            bid
-          )}&country=${encodeURIComponent(country)}`;
-          const res = await fetch(url);
-          if (!res.ok) return null;
-          const data = await res.json();
-          if (data.resultCount > 0) return data.results[0];
-          return null;
-        }
-
-        // ƯU TIÊN ID nếu có
         if (appId) {
-          for (const cc of countryCandidates) {
+          for (const cc of countries) {
             try {
-              const info = await tryLookupById(appId, cc);
+              const info = await tryLookup(
+                `https://itunes.apple.com/lookup?id=${encodeURIComponent(
+                  appId
+                )}&country=${encodeURIComponent(cc)}`
+              );
               if (info) return info;
             } catch (e) {
               console.warn('lookup by id error', cc, e);
@@ -700,11 +695,14 @@
           }
         }
 
-        // Nếu không có ID nhưng có bundleId
         if (bundleId) {
-          for (const cc of countryCandidates) {
+          for (const cc of countries) {
             try {
-              const info = await tryLookupByBundle(bundleId, cc);
+              const info = await tryLookup(
+                `https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(
+                  bundleId
+                )}&country=${encodeURIComponent(cc)}`
+              );
               if (info) return info;
             } catch (e) {
               console.warn('lookup by bundle error', cc, e);
@@ -715,25 +713,19 @@
         return null;
       }
 
-      function renderAppSummary(appInfo, purchaseData) {
+      function renderAppSummary(appInfo, rawInput) {
         const info = appInfo || {};
-        const p = purchaseData || {};
-
         const name =
           info.trackName ||
-          p.name ||
-          p.bundleDisplayName ||
-          'Ứng dụng (không lấy được tên từ App Store)';
-
+          'Ứng dụng (không lấy được tên từ App Store nhưng đã thêm thành công).';
         const icon = info.artworkUrl100 || info.artworkUrl512 || null;
 
-        const bundleId = info.bundleId || p.bundleId || 'Không rõ';
-        const appId = info.trackId || p.adamId || 'Không rõ';
-        const version =
-          info.version || p.versionString || p.bundleShortVersion || 'Không rõ';
-        const verId = p.versionId || p.appVerId || p.externalVersionId || 'N/A';
-
-        const genre = info.primaryGenreName || p.genre || null;
+        const bundleId =
+          info.bundleId || (rawInput.includes('.') ? rawInput : 'Không rõ');
+        const appId = info.trackId || 'Không rõ';
+        const version = info.version || 'Không rõ';
+        const genre = info.primaryGenreName || null;
+        const developer = info.sellerName || info.artistName || null;
 
         const html = `
           <div class="app-summary">
@@ -741,20 +733,26 @@
               ${
                 icon
                   ? `<img src="${icon}" alt="icon" />`
-                  : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;">📱</div>`
+                  : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;color:#f9fafb;">📱</div>`
               }
             </div>
             <div class="app-meta">
               <div class="app-name">${name}</div>
               <small>Bundle ID: ${bundleId}</small>
               <small>App ID: ${appId}</small>
-              <small>Phiên bản: ${version} · VerID: ${verId}</small>
+              <small>Phiên bản mới nhất trên Store: ${version}</small>
+              ${
+                developer
+                  ? `<small>Nhà phát triển: ${developer}</small>`
+                  : ''
+              }
               ${genre ? `<span class="chip">Danh mục: ${genre}</span>` : ''}
             </div>
           </div>
         `;
 
         appSummaryContainer.innerHTML = html;
+        appInfoRoot.style.display = 'block';
       }
 
       /* ==== HISTORY (localStorage) ==== */
@@ -800,13 +798,14 @@
                   hour12: false,
                 });
                 return `
-                  <div class="history-item" data-bundle="${x.bundleId}">
+                  <div class="history-item" data-input="${encodeURIComponent(
+                    x.rawInput || ''
+                  )}">
                     <div class="history-item-title">
                       ${x.name || 'Ứng dụng'}
-                      <span class="history-badge">${x.version || 'v?'}</span>
+                      <span class="history-badge">${x.note || ''}</span>
                     </div>
-                    <small>Bundle: ${x.bundleId}</small><br/>
-                    <small>App ID: ${x.appId || 'Không rõ'}</small><br/>
+                    <small>Input: ${x.rawInput || ''}</small><br/>
                     <small>Thời gian: ${time}</small>
                   </div>
                 `;
@@ -820,36 +819,21 @@
           .querySelectorAll('.history-item')
           .forEach((el) =>
             el.addEventListener('click', () => {
-              const bundle = el.getAttribute('data-bundle');
-              if (bundle) {
-                inputField.value = bundle;
-                inputField.focus();
-              }
+              const raw = el.getAttribute('data-input') || '';
+              inputField.value = decodeURIComponent(raw);
+              inputField.focus();
             })
           );
       }
 
       renderHistory(loadHistory());
 
-      /* ==== auto lookup khi blur INPUT để show icon & info ==== */
-      let pendingLookup = null;
-      inputField.addEventListener('blur', async () => {
-        const val = inputField.value.trim();
-        if (!val) return;
-        pendingLookup = val;
-        const info = await lookupApp(val);
-        if (pendingLookup !== val) return;
-        if (info) {
-          renderAppSummary(info, null);
-        }
-      });
-
       /* ==== SUBMIT ==== */
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         hideStatus();
-        jsonRaw.style.display = 'none';
+        appInfoRoot.style.display = 'none';
         appSummaryContainer.innerHTML = '';
 
         const APPLE_ID = $('#APPLE_ID').value.trim();
@@ -867,36 +851,15 @@
 
         showStatus(
           'ok',
-          'Đang đăng nhập và gửi yêu cầu mua app miễn phí đến Apple…'
+          'Đang đăng nhập và gửi yêu cầu mua app miễn phí tới Apple…'
         );
 
         submitBtn.disabled = true;
         btnIcon.innerHTML = '<span class="spinner"></span>';
         btnText.textContent = 'Đang thực hiện…';
 
-        // 1. Tra thông tin app trước
-        const appInfo = await lookupApp(rawInput);
-
-        // 2. Xác định BUNDLE ID gửi cho server
-        let inputForServer = rawInput;
-        if (rawInput.includes('.')) {
-          // người dùng đã gõ sẵn bundleId
-          inputForServer = rawInput;
-        } else if (appInfo && appInfo.bundleId) {
-          // là URL hoặc AppID số -> dùng bundleId tra được
-          inputForServer = appInfo.bundleId;
-        } else {
-          showStatus(
-            'error',
-            'Không tìm được Bundle ID từ App Store. Hãy kiểm tra lại link/App ID, hoặc nhập trực tiếp bundle ID (vd: mobi.MultiCraft).'
-          );
-          submitBtn.disabled = false;
-          btnIcon.textContent = '➕';
-          btnText.textContent = 'Thêm vào Đã mua';
-          return; // ❌ không gửi request sai format lên server nữa
-        }
-
         try {
+          // GỬI NGUYÊN INPUT LÊN SERVER – để backend tự xử lý URL/AppID/bundleId
           const res = await fetch('/purchase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -904,58 +867,56 @@
               APPLE_ID,
               PASSWORD,
               CODE,
-              input: inputForServer,
+              input: rawInput,
             }),
           });
 
           const data = await res.json();
-
-          jsonRaw.style.display = 'block';
-          jsonRaw.textContent = JSON.stringify(data, null, 2);
 
           if (data.success) {
             showStatus(
               'ok',
               '✔ Đã thêm ứng dụng miễn phí vào mục Đã mua của Apple ID này. Vào App Store → Đã Mua để tải lại trên thiết bị cần dùng.'
             );
-            renderAppSummary(appInfo, data.purchase || data);
 
-            const item = {
+            // Thử lấy thông tin app để hiển thị đẹp hơn (không ảnh hưởng kết quả)
+            let appInfo = null;
+            try {
+              appInfo = await lookupApp(rawInput);
+            } catch (e) {
+              console.warn('lookup error (ignored)', e);
+            }
+            renderAppSummary(appInfo, rawInput);
+
+            addHistoryItem({
               time: new Date().toISOString(),
               name:
                 appInfo?.trackName ||
-                data.purchase?.name ||
-                data.purchase?.bundleDisplayName ||
+                (data.app && data.app.name) ||
                 'Ứng dụng',
-              bundleId:
-                appInfo?.bundleId ||
-                data.purchase?.bundleId ||
-                inputForServer ||
-                'Không rõ',
-              appId: appInfo?.trackId || data.purchase?.adamId || null,
-              version:
-                appInfo?.version ||
-                data.purchase?.versionString ||
-                data.purchase?.bundleShortVersion ||
-                '',
-            };
-            addHistoryItem(item);
+              rawInput,
+              note: appInfo?.version || '',
+            });
           } else {
+            // Ẩn JSON debug – chỉ show message gọn
             showStatus(
               'error',
               data.error ||
                 data.customerMessage ||
-                'Không thể thêm ứng dụng vào mục Đã mua. Hãy kiểm tra lại Apple ID, mật khẩu và thử lại.'
+                'Không thể thêm ứng dụng vào mục Đã mua. Hãy kiểm tra lại thông tin và thử lại.'
             );
           }
         } catch (err) {
           console.error(err);
-          showStatus('error', 'Lỗi mạng hoặc server không phản hồi.');
+          showStatus(
+            'error',
+            'Lỗi mạng hoặc server không phản hồi. Vui lòng thử lại sau.'
+          );
+        } finally {
+          submitBtn.disabled = false;
+          btnIcon.textContent = '➕';
+          btnText.textContent = 'Thêm vào Đã mua';
         }
-
-        submitBtn.disabled = false;
-        btnIcon.textContent = '➕';
-        btnText.textContent = 'Thêm vào Đã Mua';
       });
     </script>
   </body>
