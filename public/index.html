@@ -229,7 +229,6 @@
         }
       }
 
-      /* status */
       #status-box {
         display: none;
         margin-top: 16px;
@@ -251,7 +250,6 @@
         color: var(--danger);
       }
 
-      /* App summary */
       .app-summary {
         margin-top: 14px;
         padding: 13px 12px;
@@ -313,7 +311,6 @@
         margin-top: 4px;
       }
 
-      /* JSON debug */
       .json-box {
         margin-top: 14px;
         background: rgba(15, 23, 42, 0.9);
@@ -334,7 +331,6 @@
         }
       }
 
-      /* HISTORY */
       .history-title {
         font-size: 14px;
         font-weight: 600;
@@ -385,6 +381,10 @@
         border-radius: 999px;
         border: 1px solid rgba(148, 163, 184, 0.7);
         margin-left: 4px;
+      }
+
+      .layout .card:last-child {
+        align-self: flex-start;
       }
     </style>
   </head>
@@ -445,17 +445,17 @@
           </div>
 
           <div class="field">
-            <label for="INPUT">Bundle ID hoặc link App Store</label>
+            <label for="INPUT">Bundle ID, App ID hoặc link App Store</label>
             <div class="input-wrap">
               <input
                 id="INPUT"
-                placeholder="com.locket.Locket hoặc https://apps.apple.com/.../id123"
+                placeholder="mobi.MultiCraft, 1174039276 hoặc https://apps.apple.com/..."
                 required
               />
             </div>
             <p class="helper">
-              Dán URL App Store hoặc nhập trực tiếp Bundle ID. Hệ thống sẽ cố
-              gắng lấy thông tin ứng dụng tự động.
+              Dán URL App Store, nhập App ID số hoặc Bundle ID. Hệ thống sẽ
+              tự đổi thành Bundle ID khi gửi lên server.
             </p>
           </div>
 
@@ -478,7 +478,8 @@
           <div class="title-wrap">
             <div class="history-title">Lịch sử app đã thêm</div>
             <p class="subtitle">
-              Chỉ lưu cục bộ trên trình duyệt này (localStorage). Không đồng bộ server.
+              Chỉ lưu cục bộ trên trình duyệt này (localStorage). Không đồng bộ
+              server.
             </p>
           </div>
         </div>
@@ -527,34 +528,57 @@
       }
 
       // ====== APP LOOKUP (App Store API) ======
-      async function lookupApp(input) {
-        input = (input || '').trim();
+      async function lookupApp(raw) {
+        let input = (raw || '').trim();
         if (!input) return null;
 
-        let url = '';
-        // Nếu là URL có id
+        // Nếu là URL và có id
         const idMatch = input.match(/id(\d{5,})/);
         if (idMatch) {
           const id = idMatch[1];
-          url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(
+          const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(
             id
           )}&country=vn`;
-        } else if (input.includes('.')) {
-          // bundle
-          url = `https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(
-            input
-          )}&country=vn`;
-        } else {
+          try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.resultCount > 0) return data.results[0];
+          } catch (e) {
+            console.warn('lookup error', e);
+          }
           return null;
         }
 
-        try {
-          const res = await fetch(url);
-          const data = await res.json();
-          if (data.resultCount > 0) return data.results[0];
-        } catch (e) {
-          console.warn('lookup error', e);
+        // Nếu là toàn số => coi là App ID
+        if (/^\d{5,}$/.test(input)) {
+          const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(
+            input
+          )}&country=vn`;
+          try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.resultCount > 0) return data.results[0];
+          } catch (e) {
+            console.warn('lookup error', e);
+          }
+          return null;
         }
+
+        // Nếu có dấu chấm => bundleId
+        if (input.includes('.')) {
+          const url = `https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(
+            input
+          )}&country=vn`;
+          try {
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.resultCount > 0) return data.results[0];
+          } catch (e) {
+            console.warn('lookup error', e);
+          }
+          return null;
+        }
+
         return null;
       }
 
@@ -565,6 +589,7 @@
         const name =
           info.trackName ||
           p.name ||
+          p.bundleDisplayName ||
           'Ứng dụng (không lấy được tên từ App Store)';
 
         const icon = info.artworkUrl100 || info.artworkUrl512 || null;
@@ -626,7 +651,7 @@
       function addHistoryItem(item) {
         const list = loadHistory();
         list.unshift(item);
-        const trimmed = list.slice(0, 20); // tối đa 20 app
+        const trimmed = list.slice(0, 20);
         saveHistory(trimmed);
         renderHistory(trimmed);
       }
@@ -684,7 +709,7 @@
         if (!val) return;
         pendingLookup = val;
         const info = await lookupApp(val);
-        if (pendingLookup !== val) return; // user đã đổi
+        if (pendingLookup !== val) return;
         if (info) {
           renderAppSummary(info, null);
         }
@@ -701,10 +726,13 @@
         const APPLE_ID = $('#APPLE_ID').value.trim();
         const PASSWORD = $('#PASSWORD').value;
         const CODE = $('#CODE').value.trim() || undefined;
-        const input = $('#INPUT').value.trim();
+        const rawInput = $('#INPUT').value.trim();
 
-        if (!APPLE_ID || !PASSWORD || !input) {
-          showStatus('error', 'Vui lòng nhập đầy đủ Apple ID, mật khẩu và app.');
+        if (!APPLE_ID || !PASSWORD || !rawInput) {
+          showStatus(
+            'error',
+            'Vui lòng nhập đầy đủ Apple ID, mật khẩu và thông tin ứng dụng.'
+          );
           return;
         }
 
@@ -714,14 +742,27 @@
         btnIcon.innerHTML = '<span class="spinner"></span>';
         btnText.textContent = 'Đang thực hiện…';
 
-        // Thử lấy appInfo trước
-        const appInfo = await lookupApp(input);
+        // Lookup để lấy appInfo + bundleId nếu cần
+        const appInfo = await lookupApp(rawInput);
+
+        // Xác định giá trị gửi lên server:
+        // - Nếu người dùng nhập bundleId (có dấu .) → giữ nguyên
+        // - Nếu nhập URL hoặc appId số → dùng bundleId lấy từ lookupApp
+        let inputForServer = rawInput;
+        if (!rawInput.includes('.') && appInfo?.bundleId) {
+          inputForServer = appInfo.bundleId;
+        }
 
         try {
           const res = await fetch('/purchase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ APPLE_ID, PASSWORD, CODE, input }),
+            body: JSON.stringify({
+              APPLE_ID,
+              PASSWORD,
+              CODE,
+              input: inputForServer,
+            }),
           });
 
           const data = await res.json();
@@ -733,7 +774,6 @@
             showStatus('ok', '✔ Đã thêm vào mục Đã mua thành công!');
             renderAppSummary(appInfo, data.purchase || data);
 
-            // Lưu vào history
             const item = {
               time: new Date().toISOString(),
               name:
@@ -744,7 +784,7 @@
               bundleId:
                 appInfo?.bundleId ||
                 data.purchase?.bundleId ||
-                input ||
+                inputForServer ||
                 'Không rõ',
               appId: appInfo?.trackId || data.purchase?.adamId || null,
               version:
