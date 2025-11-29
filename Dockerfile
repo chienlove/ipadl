@@ -11,7 +11,8 @@ RUN curl -L "https://github.com/majd/ipatool/releases/download/v2.2.0/ipatool-2.
     -o /tmp/ipatool.tar.gz \
  && mkdir -p /tmp/ipatool-extract \
  && tar -xzf /tmp/ipatool.tar.gz -C /tmp/ipatool-extract \
- && mv /tmp/ipatool-extract/ipatool /usr/local/bin/ipatool \
+    # Lúc này trong /tmp/ipatool-extract sẽ có bin/ipatool-2.2.0-linux-amd64
+ && mv /tmp/ipatool-extract/bin/ipatool-2.2.0-linux-amd64 /usr/local/bin/ipatool \
  && chmod +x /usr/local/bin/ipatool \
  && rm -rf /tmp/ipatool.tar.gz /tmp/ipatool-extract
 
