@@ -1,31 +1,13 @@
 {
-  "name": "ipadl-pro",
+  "name": "ipatool-backend",
   "version": "1.0.0",
+  "description": "Backend nho nho dung ipatool lam API /purchase",
+  "main": "server.js",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "start": "node server.js"
   },
   "dependencies": {
-    "next": "^13.4.7",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "plist": "^3.0.6",
-    "axios": "^1.6.2",
-    "axios-cookiejar-support": "^4.0.7",
-    "tough-cookie": "^4.1.2",
-    "tailwindcss": "^3.3.2",
-    "typescript": "^5.1.6"
-  },
-  "devDependencies": {
-    "@types/node": "^20.4.1",
-    "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
-    "@types/tough-cookie": "^4.0.2",
-    "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.27",
-    "eslint": "^8.45.0",
-    "eslint-config-next": "^13.4.7"
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   }
 }
