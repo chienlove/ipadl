@@ -6,515 +6,770 @@
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
-    <title>Thêm ứng dụng vào “Đã mua”</title>
+    <title>Thêm ứng dụng vào mục Đã mua – Apple ID</title>
+
     <style>
-      :root {
-        color-scheme: light dark;
-        --bg: #f3f4f6;
-        --card-bg: #ffffff;
-        --text: #111827;
-        --muted: #6b7280;
-        --border: #e5e7eb;
-        --primary: #2563eb;
-        --primary-dark: #1d4ed8;
-        --danger: #dc2626;
-        --success: #16a34a;
-        --radius: 10px;
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-      @media (prefers-color-scheme: dark) {
+
+      html,
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+          Roboto, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 24px 12px;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      :root {
+        --bg: radial-gradient(circle at top, #0f172a, #020617 55%, #020617);
+        --card-bg: rgba(15, 23, 42, 0.85);
+        --input-bg: rgba(15, 23, 42, 0.8);
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --border: rgba(148, 163, 184, 0.5);
+        --primary: #3b82f6;
+        --primary-soft: rgba(59, 130, 246, 0.4);
+        --success: #22c55e;
+        --danger: #ef4444;
+      }
+
+      @media (prefers-color-scheme: light) {
         :root {
-          --bg: #020617;
-          --card-bg: #020617;
-          --text: #e5e7eb;
-          --muted: #9ca3af;
-          --border: #111827;
+          --bg: radial-gradient(circle at top, #eff6ff, #dbeafe 45%, #eff6ff);
+          --card-bg: rgba(255, 255, 255, 0.95);
+          --input-bg: rgba(248, 250, 252, 0.95);
+          --text: #0f172a;
+          --muted: #6b7280;
+          --border: rgba(148, 163, 184, 0.6);
+          --primary: #2563eb;
+          --primary-soft: rgba(37, 99, 235, 0.18);
         }
       }
 
-      * {
-        box-sizing: border-box;
+      body {
+        background: var(--bg);
+        color: var(--text);
       }
 
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        background: radial-gradient(circle at top, #0f172a, #020617 60%);
-        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-          Roboto, sans-serif;
-        color: var(--text);
-        padding: 24px 12px;
+      .layout {
+        width: 100%;
+        max-width: 960px;
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+        gap: 18px;
+      }
+
+      @media (max-width: 800px) {
+        .layout {
+          grid-template-columns: minmax(0, 1fr);
+        }
       }
 
       .card {
         width: 100%;
-        max-width: 720px;
         background: var(--card-bg);
+        padding: 22px 20px;
         border-radius: 20px;
-        border: 1px solid rgba(148, 163, 184, 0.3);
-        box-shadow: 0 20px 40px rgba(15, 23, 42, 0.45);
-        padding: 20px 18px 18px;
+        backdrop-filter: blur(18px);
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 32px rgba(15, 23, 42, 0.6);
       }
 
-      @media (min-width: 640px) {
-        .card {
-          padding: 24px 24px 20px;
-        }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
       h1 {
         font-size: 20px;
-        margin: 0 0 4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      h1 span.emoji {
-        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
       }
 
       .subtitle {
-        margin: 0 0 16px;
         font-size: 13px;
         color: var(--muted);
       }
 
+      .badge {
+        font-size: 11px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
       form {
         display: grid;
-        gap: 10px;
-        margin-top: 8px;
-        margin-bottom: 14px;
+        gap: 12px;
       }
 
       label {
         font-size: 13px;
-        font-weight: 600;
+        color: var(--muted);
         margin-bottom: 4px;
-        display: block;
       }
 
       .field {
         display: flex;
         flex-direction: column;
-        gap: 4px;
       }
 
-      input,
-      select {
+      .input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      input {
         width: 100%;
-        border-radius: 999px;
+        font-size: 16px; /* tránh zoom iOS */
+        padding: 11px 40px 11px 14px;
+        border-radius: 12px;
         border: 1px solid var(--border);
-        padding: 8px 14px;
-        font-size: 13px;
-        background: rgba(15, 23, 42, 0.02);
+        background: var(--input-bg);
         color: var(--text);
         outline: none;
-        transition: border-color 0.15s ease, box-shadow 0.15s ease,
-          background 0.15s ease;
+        transition: border 0.18s, box-shadow 0.18s, background 0.18s;
       }
 
       input::placeholder {
-        color: #9ca3af;
+        color: var(--muted);
       }
 
-      input:focus,
-      select:focus {
+      input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
-        background: rgba(15, 23, 42, 0.03);
+        box-shadow: 0 0 0 1px var(--primary-soft);
+        background: rgba(15, 23, 42, 0.9);
       }
 
-      .row {
-        display: grid;
-        grid-template-columns: 1.1fr 0.9fr;
-        gap: 10px;
-      }
-
-      @media (max-width: 480px) {
-        .row {
-          grid-template-columns: 1fr;
+      @media (prefers-color-scheme: light) {
+        input:focus {
+          background: #ffffff;
         }
       }
 
-      button[type='submit'] {
-        border: none;
-        border-radius: 999px;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #2563eb, #4f46e5);
-        color: #f9fafb;
+      .toggle-eye {
+        position: absolute;
+        right: 10px;
+        font-size: 16px;
         cursor: pointer;
+        color: var(--muted);
+        user-select: none;
+      }
+
+      .helper {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      button {
+        font-size: 16px;
+        padding: 11px 16px;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, var(--primary), #6366f1);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.18s;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
-        transition: transform 0.12s ease, box-shadow 0.12s ease,
-          filter 0.12s ease;
-        box-shadow: 0 10px 18px rgba(37, 99, 235, 0.45);
+        width: 100%;
       }
 
-      button[type='submit']:hover {
+      button:hover {
+        filter: brightness(1.05);
         transform: translateY(-1px);
-        filter: brightness(1.03);
-        box-shadow: 0 14px 26px rgba(37, 99, 235, 0.55);
       }
 
-      button[type='submit']:active {
+      button:active {
         transform: translateY(0);
-        box-shadow: 0 6px 12px rgba(15, 23, 42, 0.9);
+        filter: brightness(0.96);
       }
 
-      button[type='submit']:disabled {
+      button:disabled {
         opacity: 0.6;
-        cursor: default;
         transform: none;
-        box-shadow: none;
+        filter: none;
+        cursor: default;
       }
 
-      .btn-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-      }
-
-      .pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
+      .spinner {
+        width: 16px;
+        height: 16px;
         border-radius: 999px;
-        padding: 3px 8px;
-        font-size: 11px;
-        font-weight: 600;
-        border: 1px solid rgba(148, 163, 184, 0.4);
-        background: rgba(15, 23, 42, 0.02);
-        color: var(--muted);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #fff;
+        animation: spin 0.7s linear infinite;
       }
 
-      .status {
-        border-radius: 12px;
-        padding: 8px 10px;
-        font-size: 12px;
-        margin-bottom: 8px;
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* status */
+      #status-box {
         display: none;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .status--info {
-        display: flex;
-        background: rgba(59, 130, 246, 0.08);
-        border: 1px solid rgba(59, 130, 246, 0.4);
-        color: #1d4ed8;
-      }
-
-      .status--success {
-        display: flex;
-        background: rgba(22, 163, 74, 0.08);
-        border: 1px solid rgba(22, 163, 74, 0.45);
-        color: #15803d;
-      }
-
-      .status--error {
-        display: flex;
-        background: rgba(220, 38, 38, 0.08);
-        border: 1px solid rgba(220, 38, 38, 0.4);
-        color: #b91c1c;
-      }
-
-      .status-icon {
-        font-size: 14px;
-      }
-
-      .status-text {
-        flex: 1;
-      }
-
-      .status-code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          'Liberation Mono', 'Courier New', monospace;
-        font-size: 11px;
-        opacity: 0.8;
-      }
-
-      .output-wrap {
-        margin-top: 10px;
+        margin-top: 16px;
+        padding: 11px 12px;
         border-radius: 12px;
-        border: 1px solid var(--border);
-        background: rgba(15, 23, 42, 0.02);
-        padding: 8px;
-      }
-
-      #out {
-        margin: 0;
-        white-space: pre-wrap;
-        word-break: break-word;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-          'Liberation Mono', 'Courier New', monospace;
-        font-size: 11px;
+        font-size: 13px;
         line-height: 1.5;
-        max-height: 320px;
-        overflow: auto;
       }
 
-      .helper-text {
-        font-size: 11px;
-        color: var(--muted);
+      #status-box.ok {
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.5);
+        color: var(--success);
       }
 
-      .storefront-inline {
+      #status-box.error {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        color: var(--danger);
+      }
+
+      /* App summary */
+      .app-summary {
+        margin-top: 14px;
+        padding: 13px 12px;
+        border-radius: 16px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid var(--border);
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
+        align-items: center;
+      }
+
+      @media (prefers-color-scheme: light) {
+        .app-summary {
+          background: rgba(255, 255, 255, 0.9);
+        }
+      }
+
+      .app-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #020617;
+        border: 1px solid rgba(148, 163, 184, 0.6);
+        flex-shrink: 0;
+      }
+
+      .app-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .app-meta {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 2px;
       }
 
-      @media (min-width: 520px) {
-        .storefront-inline {
-          flex-direction: row;
-          align-items: center;
+      .app-name {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .app-meta small {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .chip {
+        display: inline-flex;
+        padding: 2px 7px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      /* JSON debug */
+      .json-box {
+        margin-top: 14px;
+        background: rgba(15, 23, 42, 0.9);
+        border-radius: 12px;
+        padding: 10px;
+        white-space: pre-wrap;
+        font-size: 11px;
+        max-height: 220px;
+        overflow-y: auto;
+        color: #e5e7eb;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+      }
+
+      @media (prefers-color-scheme: light) {
+        .json-box {
+          background: rgba(15, 23, 42, 0.9);
+          color: #e5e7eb;
         }
-        .storefront-inline > * {
-          flex: 1;
-        }
+      }
+
+      /* HISTORY */
+      .history-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .history-empty {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .history-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 360px;
+        overflow-y: auto;
+      }
+
+      .history-item {
+        border-radius: 12px;
+        padding: 9px 10px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.15s;
+      }
+
+      .history-item:hover {
+        border-color: var(--primary);
+        transform: translateY(-1px);
+      }
+
+      .history-item-title {
+        font-weight: 600;
+        margin-bottom: 2px;
+        font-size: 13px;
+      }
+
+      .history-item small {
+        color: var(--muted);
+      }
+
+      .history-badge {
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.7);
+        margin-left: 4px;
       }
     </style>
   </head>
+
   <body>
-    <main class="card">
-      <header style="margin-bottom: 10px">
-        <h1>
-          <span class="emoji">⭐</span>
-          <span>Thêm ứng dụng vào “Đã mua”</span>
-          <span class="pill">
-            <span>Admin only</span>
-          </span>
-        </h1>
-        <p class="subtitle">
-          Dùng cho <strong>app miễn phí</strong>. Apple sẽ ghi nhận app vào Apple
-          ID như khi bạn bấm “Nhận/Get” trên App Store.
-        </p>
-      </header>
-
-      <form id="f">
-        <div class="field">
-          <label for="APPLE_ID">Apple ID (email)</label>
-          <input
-            id="APPLE_ID"
-            placeholder="ví dụ: user@example.com"
-            autocomplete="username"
-            required
-          />
-        </div>
-
-        <div class="field">
-          <label for="PASSWORD">Mật khẩu Apple ID</label>
-          <input
-            id="PASSWORD"
-            placeholder="Nhập mật khẩu"
-            type="password"
-            autocomplete="current-password"
-            required
-          />
-        </div>
-
-        <div class="row">
-          <div class="field">
-            <label for="CODE">Mã 2FA (nếu có)</label>
-            <input id="CODE" placeholder="Có thể để trống" />
+    <div class="layout">
+      <!-- LEFT: FORM -->
+      <div class="card">
+        <div class="card-header">
+          <div class="title-wrap">
+            <h1>Thêm ứng dụng vào mục Đã mua</h1>
+            <p class="subtitle">
+              Sử dụng với Apple ID phụ. Tốt nhất chỉ áp dụng cho ứng dụng miễn phí.
+            </p>
           </div>
+          <div class="badge">Admin tool</div>
+        </div>
+
+        <form id="f">
           <div class="field">
-            <label for="STOREFRONT_SELECT">Storefront</label>
-            <div class="storefront-inline">
-              <select id="STOREFRONT_SELECT">
-                <option value="">Tự động (khuyên dùng)</option>
-                <option value="143471-1,32"
-                  >🇻🇳 Việt Nam (143471-1,32)</option
-                >
-                <option value="143441-1,32"
-                  >🇺🇸 United States (143441-1,32)</option
-                >
-                <option value="143462-1,32">🇯🇵 Japan (143462-1,32)</option>
-                <option value="143466-1,32">🇰🇷 Korea (143466-1,32)</option>
-                <option value="143464-1,32"
-                  >🇸🇬 Singapore (143464-1,32)</option
-                >
-                <option value="custom">Tự nhập Storefront…</option>
-              </select>
-            </div>
-            <div class="helper-text">
-              Chọn quốc gia trùng với vùng Apple ID. Nếu không chắc, để
-              <strong>Tự động</strong>.
+            <label for="APPLE_ID">Apple ID</label>
+            <div class="input-wrap">
+              <input
+                id="APPLE_ID"
+                placeholder="vd: user@gmail.com"
+                autocomplete="username"
+                required
+              />
             </div>
           </div>
-        </div>
 
-        <div class="field" id="storefront-custom-wrap" style="display: none">
-          <label for="STOREFRONT">Storefront tùy chỉnh</label>
-          <input
-            id="STOREFRONT"
-            placeholder="Ví dụ: 143471-1,32"
-            autocomplete="off"
-          />
-          <div class="helper-text">
-            Chỉ cần nếu muốn ép một mã storefront cụ thể (server hiện chưa dùng,
-            chủ yếu để bạn note).
+          <div class="field">
+            <label for="PASSWORD">Mật khẩu</label>
+            <div class="input-wrap">
+              <input
+                type="password"
+                id="PASSWORD"
+                placeholder="Mật khẩu Apple ID"
+                autocomplete="current-password"
+                required
+              />
+              <span class="toggle-eye" id="togglePwd">👁</span>
+            </div>
+            <p class="helper">
+              Không lưu mật khẩu ở server. Chỉ nên dùng với Apple ID phụ của
+              riêng bạn.
+            </p>
           </div>
-        </div>
 
-        <div class="field">
-          <label for="INPUT">Bundle ID hoặc link App Store</label>
-          <input
-            id="INPUT"
-            placeholder="vd: mobi.MultiCraft hoặc https://apps.apple.com/.../id1174039276"
-            required
-          />
-        </div>
+          <div class="field">
+            <label for="CODE">Mã 2FA (nếu Apple yêu cầu)</label>
+            <div class="input-wrap">
+              <input
+                id="CODE"
+                placeholder="Có thể để trống, nhập khi Apple gửi mã 6 số"
+              />
+            </div>
+          </div>
 
-        <div style="display: flex; justify-content: space-between; gap: 8px">
-          <button type="submit" id="submitBtn">
-            <span class="btn-label">
-              <span id="btnIcon">➕</span>
-              <span id="btnText">Thêm vào Đã mua</span>
-            </span>
+          <div class="field">
+            <label for="INPUT">Bundle ID hoặc link App Store</label>
+            <div class="input-wrap">
+              <input
+                id="INPUT"
+                placeholder="com.locket.Locket hoặc https://apps.apple.com/.../id123"
+                required
+              />
+            </div>
+            <p class="helper">
+              Dán URL App Store hoặc nhập trực tiếp Bundle ID. Hệ thống sẽ cố
+              gắng lấy thông tin ứng dụng tự động.
+            </p>
+          </div>
+
+          <button id="submitBtn">
+            <span id="btnIcon">➕</span>
+            <span id="btnText">Thêm vào Đã mua</span>
           </button>
-          <div class="helper-text" style="align-self: center; text-align: right">
-            ⚠️ Chỉ dùng với <strong>Apple ID phụ của bạn</strong>. Không nhập
-            tài khoản của người khác.
+        </form>
+
+        <div id="status-box"></div>
+
+        <div id="app-summary-container"></div>
+
+        <pre id="json-raw" class="json-box" style="display:none"></pre>
+      </div>
+
+      <!-- RIGHT: HISTORY -->
+      <div class="card">
+        <div class="card-header" style="margin-bottom: 10px">
+          <div class="title-wrap">
+            <div class="history-title">Lịch sử app đã thêm</div>
+            <p class="subtitle">
+              Chỉ lưu cục bộ trên trình duyệt này (localStorage). Không đồng bộ server.
+            </p>
           </div>
         </div>
-      </form>
-
-      <div id="status" class="status">
-        <div class="status-icon" id="statusIcon">ℹ️</div>
-        <div class="status-text" id="statusText"></div>
-        <div class="status-code" id="statusCode"></div>
+        <div id="history-root">
+          <p class="history-empty">
+            Chưa có ứng dụng nào được thêm trong phiên này.
+          </p>
+        </div>
       </div>
-
-      <div class="output-wrap">
-        <pre id="out">Chưa có request nào được gửi.</pre>
-      </div>
-    </main>
+    </div>
 
     <script>
       const $ = (s) => document.querySelector(s);
 
-      const statusEl = $('#status');
-      const statusIconEl = $('#statusIcon');
-      const statusTextEl = $('#statusText');
-      const statusCodeEl = $('#statusCode');
-      const outEl = $('#out');
       const form = $('#f');
+      const pwdInput = $('#PASSWORD');
+      const togglePwd = $('#togglePwd');
+      const statusBox = $('#status-box');
+      const jsonRaw = $('#json-raw');
+      const appSummaryContainer = $('#app-summary-container');
       const submitBtn = $('#submitBtn');
       const btnIcon = $('#btnIcon');
       const btnText = $('#btnText');
-      const storefrontSelect = $('#STOREFRONT_SELECT');
-      const storefrontCustomWrap = $('#storefront-custom-wrap');
-      const storefrontInput = $('#STOREFRONT');
+      const inputField = $('#INPUT');
+      const historyRoot = $('#history-root');
 
-      function setStatus(type, text, code) {
-        statusEl.className = 'status';
-        if (!type) {
-          statusEl.style.display = 'none';
-          return;
-        }
-        statusEl.style.display = 'flex';
-        if (type === 'info') {
-          statusEl.classList.add('status--info');
-          statusIconEl.textContent = 'ℹ️';
-        } else if (type === 'success') {
-          statusEl.classList.add('status--success');
-          statusIconEl.textContent = '✅';
-        } else if (type === 'error') {
-          statusEl.classList.add('status--error');
-          statusIconEl.textContent = '⚠️';
-        }
-        statusTextEl.textContent = text || '';
-        statusCodeEl.textContent = code ? `(${code})` : '';
+      // ====== PASSWORD EYE ======
+      togglePwd.addEventListener('click', () => {
+        const type = pwdInput.type === 'password' ? 'text' : 'password';
+        pwdInput.type = type;
+        togglePwd.textContent = type === 'password' ? '👁' : '🙈';
+      });
+
+      // ====== STATUS ======
+      function showStatus(type, msg) {
+        statusBox.style.display = 'block';
+        statusBox.className = '';
+        statusBox.classList.add(type);
+        statusBox.id = 'status-box';
+        statusBox.textContent = msg;
+        statusBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
-      storefrontSelect.addEventListener('change', () => {
-        if (storefrontSelect.value === 'custom') {
-          storefrontCustomWrap.style.display = 'block';
-          storefrontInput.focus();
+      function hideStatus() {
+        statusBox.style.display = 'none';
+      }
+
+      // ====== APP LOOKUP (App Store API) ======
+      async function lookupApp(input) {
+        input = (input || '').trim();
+        if (!input) return null;
+
+        let url = '';
+        // Nếu là URL có id
+        const idMatch = input.match(/id(\d{5,})/);
+        if (idMatch) {
+          const id = idMatch[1];
+          url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(
+            id
+          )}&country=vn`;
+        } else if (input.includes('.')) {
+          // bundle
+          url = `https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(
+            input
+          )}&country=vn`;
         } else {
-          storefrontCustomWrap.style.display = 'none';
-          storefrontInput.value = '';
+          return null;
+        }
+
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.resultCount > 0) return data.results[0];
+        } catch (e) {
+          console.warn('lookup error', e);
+        }
+        return null;
+      }
+
+      function renderAppSummary(appInfo, purchaseData) {
+        const info = appInfo || {};
+        const p = purchaseData || {};
+
+        const name =
+          info.trackName ||
+          p.name ||
+          'Ứng dụng (không lấy được tên từ App Store)';
+
+        const icon = info.artworkUrl100 || info.artworkUrl512 || null;
+
+        const bundleId = info.bundleId || p.bundleId || 'Không rõ';
+        const appId = info.trackId || p.adamId || 'Không rõ';
+        const version =
+          info.version || p.versionString || p.bundleShortVersion || 'Không rõ';
+        const verId = p.versionId || p.appVerId || p.externalVersionId || 'N/A';
+
+        const genre = info.primaryGenreName || p.genre || null;
+
+        const html = `
+          <div class="app-summary">
+            <div class="app-icon">
+              ${
+                icon
+                  ? `<img src="${icon}" alt="icon" />`
+                  : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;">📱</div>`
+              }
+            </div>
+            <div class="app-meta">
+              <div class="app-name">${name}</div>
+              <small>Bundle ID: ${bundleId}</small>
+              <small>App ID: ${appId}</small>
+              <small>Phiên bản: ${version} · VerID: ${verId}</small>
+              ${
+                genre
+                  ? `<span class="chip">Danh mục: ${genre}</span>`
+                  : ''
+              }
+            </div>
+          </div>
+        `;
+
+        appSummaryContainer.innerHTML = html;
+      }
+
+      // ====== HISTORY (localStorage) ======
+      const HISTORY_KEY = 'ipatool_purchase_history_v1';
+
+      function loadHistory() {
+        try {
+          const raw = localStorage.getItem(HISTORY_KEY);
+          if (!raw) return [];
+          const arr = JSON.parse(raw);
+          return Array.isArray(arr) ? arr : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveHistory(list) {
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+        } catch {}
+      }
+
+      function addHistoryItem(item) {
+        const list = loadHistory();
+        list.unshift(item);
+        const trimmed = list.slice(0, 20); // tối đa 20 app
+        saveHistory(trimmed);
+        renderHistory(trimmed);
+      }
+
+      function renderHistory(list) {
+        if (!list || list.length === 0) {
+          historyRoot.innerHTML =
+            '<p class="history-empty">Chưa có ứng dụng nào được thêm trong phiên này.</p>';
+          return;
+        }
+
+        const html = `
+          <div class="history-list">
+            ${list
+              .map((x) => {
+                const time = new Date(x.time).toLocaleString('vi-VN', {
+                  hour12: false,
+                });
+                return `
+                  <div class="history-item" data-bundle="${x.bundleId}">
+                    <div class="history-item-title">
+                      ${x.name || 'Ứng dụng'}
+                      <span class="history-badge">${x.version || 'v?'}</span>
+                    </div>
+                    <small>Bundle: ${x.bundleId}</small><br/>
+                    <small>App ID: ${x.appId || 'Không rõ'}</small><br/>
+                    <small>Thời gian: ${time}</small>
+                  </div>
+                `;
+              })
+              .join('')}
+          </div>
+        `;
+        historyRoot.innerHTML = html;
+
+        historyRoot
+          .querySelectorAll('.history-item')
+          .forEach((el) =>
+            el.addEventListener('click', () => {
+              const bundle = el.getAttribute('data-bundle');
+              if (bundle) {
+                inputField.value = bundle;
+                inputField.focus();
+              }
+            })
+          );
+      }
+
+      renderHistory(loadHistory());
+
+      // ====== tự lookup khi blur INPUT ======
+      let pendingLookup = null;
+      inputField.addEventListener('blur', async () => {
+        const val = inputField.value.trim();
+        if (!val) return;
+        pendingLookup = val;
+        const info = await lookupApp(val);
+        if (pendingLookup !== val) return; // user đã đổi
+        if (info) {
+          renderAppSummary(info, null);
         }
       });
 
+      // ====== SUBMIT ======
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        setStatus('info', 'Đang xử lý yêu cầu…', '');
-        outEl.textContent = 'Đang gọi API /purchase…';
 
-        const storefrontSelectVal = storefrontSelect.value;
-        const storefrontFinal =
-          storefrontSelectVal === 'custom'
-            ? storefrontInput.value.trim() || undefined
-            : storefrontSelectVal || undefined;
+        hideStatus();
+        jsonRaw.style.display = 'none';
+        appSummaryContainer.innerHTML = '';
 
-        const body = {
-          APPLE_ID: $('#APPLE_ID').value.trim(),
-          PASSWORD: $('#PASSWORD').value,
-          CODE: $('#CODE').value.trim() || undefined,
-          input: $('#INPUT').value.trim(),
-          storefront: storefrontFinal,
-        };
+        const APPLE_ID = $('#APPLE_ID').value.trim();
+        const PASSWORD = $('#PASSWORD').value;
+        const CODE = $('#CODE').value.trim() || undefined;
+        const input = $('#INPUT').value.trim();
+
+        if (!APPLE_ID || !PASSWORD || !input) {
+          showStatus('error', 'Vui lòng nhập đầy đủ Apple ID, mật khẩu và app.');
+          return;
+        }
+
+        showStatus('ok', 'Đang xử lý… đợi 3–8 giây…');
 
         submitBtn.disabled = true;
-        btnIcon.textContent = '⏳';
+        btnIcon.innerHTML = '<span class="spinner"></span>';
         btnText.textContent = 'Đang thực hiện…';
 
+        // Thử lấy appInfo trước
+        const appInfo = await lookupApp(input);
+
         try {
-          const r = await fetch('/purchase', {
+          const res = await fetch('/purchase', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
+            body: JSON.stringify({ APPLE_ID, PASSWORD, CODE, input }),
           });
 
-          const data = await r.json().catch(() => ({}));
+          const data = await res.json();
 
-          if (data.require2FA) {
-            setStatus(
-              'info',
-              'Apple yêu cầu mã 2FA. Nhập mã vào ô "Mã 2FA" rồi bấm lại.',
-              ''
-            );
-            outEl.textContent = JSON.stringify(data, null, 2);
-          } else if (data.success) {
-            const msg =
-              data.message ||
-              data.customerMessage ||
-              'Đã thêm vào Đã mua (theo ipatool).';
-            setStatus('success', msg, '');
-            outEl.textContent = JSON.stringify(data, null, 2);
+          jsonRaw.style.display = 'block';
+          jsonRaw.textContent = JSON.stringify(data, null, 2);
+
+          if (data.success) {
+            showStatus('ok', '✔ Đã thêm vào mục Đã mua thành công!');
+            renderAppSummary(appInfo, data.purchase || data);
+
+            // Lưu vào history
+            const item = {
+              time: new Date().toISOString(),
+              name:
+                appInfo?.trackName ||
+                data.purchase?.name ||
+                data.purchase?.bundleDisplayName ||
+                'Ứng dụng',
+              bundleId:
+                appInfo?.bundleId ||
+                data.purchase?.bundleId ||
+                input ||
+                'Không rõ',
+              appId: appInfo?.trackId || data.purchase?.adamId || null,
+              version:
+                appInfo?.version ||
+                data.purchase?.versionString ||
+                data.purchase?.bundleShortVersion ||
+                '',
+            };
+            addHistoryItem(item);
           } else {
-            const msg =
-              data.error ||
-              data.customerMessage ||
-              'Không thể thêm vào mục Đã mua.';
-            setStatus(
+            showStatus(
               'error',
-              msg,
-              data.failureType || data.failureCode || data.step || ''
+              data.error ||
+                data.customerMessage ||
+                'Không thể thêm ứng dụng vào mục Đã mua.'
             );
-            outEl.textContent = JSON.stringify(data, null, 2);
           }
         } catch (err) {
-          setStatus(
-            'error',
-            'Lỗi mạng hoặc server. Xem console để biết thêm chi tiết.',
-            ''
-          );
-          outEl.textContent = String(err);
-        } finally {
-          submitBtn.disabled = false;
-          btnIcon.textContent = '➕';
-          btnText.textContent = 'Thêm vào Đã mua';
+          console.error(err);
+          showStatus('error', 'Lỗi mạng hoặc server không phản hồi.');
         }
+
+        submitBtn.disabled = false;
+        btnIcon.textContent = '➕';
+        btnText.textContent = 'Thêm vào Đã mua';
       });
     </script>
   </body>
